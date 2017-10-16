@@ -1,14 +1,15 @@
 import datetime
+from collections import OrderedDict
 
 class Component:
 
-	def __init__(self, ID = None, weight = 0):
-		self.ID = ID 
+	def __init__(self, vID = None, weight = 0):
+		self.vID = vID 
 		self.weight = weight
 		self.list_adj = []
 
-	def SetAdjacents(self, IDadj):
-		self.list_adj.append(IDadj)
+	def SetAdjacents(self, vIDadj):
+		self.list_adj.append(vIDadj)
 
 	def SetWeight(self, weight):
 		self.weight = weight
@@ -27,10 +28,26 @@ class Component:
 
 class Launch:
 	
-	def __init__(self, IDdate = None, max_weight = 0, var_cost = 0):
-		self.IDdate = IDdate
-		self.max_weight = max_weight
+	def __init__(self, dateID = None, max_payload = 0, fixed_cost = 0, var_cost = 0):
+		self.dateID = dateID
+		self.max_payload = max_payload
+		self.fixed_cost = fixed_cost
 		self.var_cost = var_cost
+
+	def SetIDdate(self, dateID):
+		self.dateID = dateID
+
+	def SetMaxPayload(self, max_payload):
+		self.max_payload = max_payload
+
+	def SetFixedCost(self, fixed_cost):
+		self.fixed_cost = fixed_cost
+
+	def SetVarCost(self, var_cost):
+		self.var_cost = var_cost
+
+	def __repr__(self):
+		return self.max_payload + "," +  self.fixed_cost + "," +  self.var_cost + "\n" 	
 
 
 
@@ -69,14 +86,19 @@ class Graph(Component, Launch):
 					self.dict_comp[comp_id2].SetAdjacents(comp_id1)
 			elif line[0] == 'L':
 				line = line.strip('\n')
-				date = line.split()[1]
-				try:
-					print(datetime.datetime.strptime(date, '%d%m%Y').date())
-				except:
-					print("Error")
+				date_id = datetime.datetime.strptime(line.split()[1], '%d%m%Y').date()
+				max_payload = line.split()[2]
+				fixed_cost = line.split()[3]
+				var_cost = line.split()[4]
+				
+				self.dict_launch[date_id] = Launch(date_id, max_payload, fixed_cost, var_cost)
 
 		file.close()
 
-	def getDictComponents(self):
+	def GetDictComponents(self):
 		return self.dict_comp
+
+	def GetDictLaunchs(self):
+		self.dict_launch = dict(OrderedDict(sorted(self.dict_launch.items(), key=lambda t: t[0])))
+		return self.dict_launch
 
