@@ -1,7 +1,7 @@
 from Graph import *
 
 
-graph = Graph("mir.txt")
+graph = Graph("trivial1.txt")
 
 print(graph.getDictComponents())
 
