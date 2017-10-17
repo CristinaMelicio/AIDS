@@ -1,6 +1,5 @@
 from Graph2 import *
 from queue import PriorityQueue
-from collections import Counter
 
 
 graph = Graph("mir.txt")
@@ -34,30 +33,10 @@ def expand_node(node):
 		frontier.put((0,0, Node( parent = node, state = ['L'], depth = node.depth+1, n_launch = node.n_launch + 1)))	
 		print_queue(frontier)
 	else:
-		# possible_components = []
-		# #verify all components that can be connected to the ones that are already in space
-		# for component in node.state:
-		# 	# collect all neighbours of a node
-		# 	neighbours = graph.dict_comp[component].list_adj
-		# 	print(neighbours)
-		# 	# verify if the neighbours are already in space or were already added to the list of possible components to lauch
-		# 	for neighbour in neighbours:
-		# 		if (neighbour in node.state) or (neighbour in possible_components) :
-		# 			pass
-		# 		else:
-		# 			possible_components.append(neighbour)
-		# print(possible_components)
-		# for component in possible_components:
-		# 	virtual_state = list(node.state).append(component)
-		# 	payload = graph.dict_comp[component].weight + node.payload
-		# 	if( payload < graph.dict_launch[node.n_launch+1].max_payload):
-		# 		graph.n_nodes = graph.n_nodes + 1
-		# 		state = list(node.state).append(component)
-		# 		#print(graph.dict_launch[node.depth+1])
-		# 		path_cost = node.path_cost + graph.dict_launch[node.depth+1].var_cost*graph.dict_comp[component].weight
-		# 		print(component, graph.dict_comp[component].vID,  graph.dict_comp[component].weight, graph.dict_comp[component].list_adj, path_cost)
-		# 		frontier.put((path_cost, graph.n_nodes, Node(parent = node, state = state, depth = node.depth+1, path_cost = path_cost, payload = graph.dict_comp[component].weight)))
+
+		# nodes generated in each recursive call of expansion
 		virtual_nodes = [node]
+		# all nodes derived from the recursive expansion
 		new_nodes = []
 		while virtual_nodes:
 			print('iterou')
@@ -65,24 +44,30 @@ def expand_node(node):
 			for virtual_node in virtual_nodes:
 				new_nodes.append(virtual_node)
 				virtual_node.print_info()
-				
+
 		for new_node in new_nodes:
+			# actualize path_cost with fixed cost
 			new_node.path_cost = new_node.path_cost + graph.dict_launch[node.n_launch+1].fixed_cost
 			graph.n_nodes = graph.n_nodes +1
-			frontier.put((new_node.path_cost, graph.n_nodes, new_node))			
+			# place on priority queue ordered by path cost
+			frontier.put((new_node.path_cost, graph.n_nodes, new_node))
+
 		print_queue(frontier)
 
 def expand(nodes,parent):
+	# auxiliary to store already generated states (used for comparsion)
 	virtual_states = []
+	# stores all new nodes
 	new_nodes = []
+	# loop trough all received nodes
 	for node in nodes:
 		possible_components = []
 		node.print_info()
 		#print('node' , node)
+
+		# collect neighbours of every component in space
 		for component in node.state:
-			# collect all neighbours of a node
 			neighbours = graph.dict_comp[component].list_adj
-			#print(neighbours)
 			# verify if the neighbours are already in space or were already added to the list of possible components to lauch
 			for neighbour in neighbours:
 				if (neighbour in node.state) or (neighbour in possible_components) :
@@ -90,30 +75,38 @@ def expand(nodes,parent):
 				else:
 					possible_components.append(neighbour)
 		print(possible_components)
+
+
 		for component in possible_components:
 			possible_state = list(node.state)
 			possible_state.append(component)
 			#print('ps', list(node.state), list(node.state).append(component),  possible_state)
+
+			# check if created state already exists
 			if check_equal_lists_2(possible_state,virtual_states):
 				pass
+			# if not create new node
 			else:
+				# add state to list of current reached states
 				virtual_states.append(possible_state)
 				payload = graph.dict_comp[component].weight + node.payload
 				print(possible_state, payload)
 				if( payload < graph.dict_launch[parent.n_launch+1].max_payload):
-					print('a')
+					print('accepted')
 					#print(graph.dict_launch[node.depth+1])
 					path_cost = node.path_cost + graph.dict_launch[parent.n_launch+1].var_cost*graph.dict_comp[component].weight
 					#print(component, graph.dict_comp[component].vID,  graph.dict_comp[component].weight, graph.dict_comp[component].list_adj, path_cost)
 					new_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, path_cost = path_cost, payload = payload, n_launch = parent.n_launch + 1))
 	return new_nodes
 
+# check if a list is equal to one in a set of lists
 def check_equal_lists_2(list1,list_lists):
 	for list2 in list_lists:
 		if check_equal_lists(list1,list2):
 			return True
 	return False
 
+# auxiliar to check if two lists are equal
 def check_equal_lists(list1,list2):
 	for l1 in list1:
 		if l1 in list2:
