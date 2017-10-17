@@ -49,13 +49,16 @@ class Launch:
 	def __repr__(self):
 		return str(self.max_payload) + "," +  str(self.fixed_cost) + "," +  str(self.var_cost) + "\n" 	
 
-
-
+# adicionei float() em sitios para poder fazer contas com os valores
+# apaguei uma linha numa das condicoes que nao era preciso
+# adicionei n_nodes para sabermos quantos nos foram gerados
+# arranjei maneira de ordenar o dicionario
 class Graph(Component, Launch):
 
 	def __init__(self, file):
 		self.dict_comp = {}
 		self.dict_launch = {}
+		# number generated nodes
 		self.n_nodes = 0
 
 		file = open(file, "r")
@@ -112,10 +115,15 @@ class Node:
 
 	def __init__(self, parent = None, state = [], depth = 0, path_cost = 0, payload = 0, n_launch = 0):
 		self.parent = parent
+		# list with name of components already in space
 		self.state = state
+		# cost of all movements until this node
 		self.path_cost = path_cost
+		# max is number of launches
 		self.depth = depth
+		# payload in this launch
 		self.payload = payload
+		# for now useless, check in the end to clean if needed
 		self.n_launch = n_launch
 
 	# def __repr__(self):
