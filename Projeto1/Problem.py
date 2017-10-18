@@ -49,11 +49,7 @@ class Launch:
 	def __repr__(self):
 		return str(self.max_payload) + "," +  str(self.fixed_cost) + "," +  str(self.var_cost) + "\n" 	
 
-# adicionei float() em sitios para poder fazer contas com os valores
-# apaguei uma linha numa das condicoes que nao era preciso
-# adicionei n_nodes para sabermos quantos nos foram gerados
-# arranjei maneira de ordenar o dicionario
-class Graph(Component, Launch):
+class Problem(Component, Launch):
 
 	def __init__(self, file):
 		self.dict_comp = {}
@@ -101,15 +97,6 @@ class Graph(Component, Launch):
 		for i in range(len(list_aux)):
 			dict_aux[i+1] = list(list_aux[i])[1] 		
 		self.dict_launch = dict_aux	
-
-
-	def GetDictComponents(self):
-		return self.dict_comp
-
-	def GetDictLaunchs(self):
-		self.dict_launch = dict(OrderedDict(sorted(self.dict_launch.items(), key=lambda t: t[0])))
-		return self.dict_launch
-
 
 class Node:
 

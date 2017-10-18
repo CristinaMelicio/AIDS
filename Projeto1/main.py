@@ -1,12 +1,8 @@
-from Graph2 import *
+from Problem import *
 from queue import PriorityQueue
 
 
-graph = Graph("mir.txt")
-
-#print(graph.GetDictComponents())
-
-#print(graph.GetDictLaunchs())
+graph = Problem("mir.txt")
 
 explored = []
 frontier = []
@@ -70,10 +66,8 @@ def expand(nodes,parent):
 			neighbours = graph.dict_comp[component].list_adj
 			# verify if the neighbours are already in space or were already added to the list of possible components to lauch
 			for neighbour in neighbours:
-				if (neighbour in node.state) or (neighbour in possible_components) :
-					pass
-				else:
-					possible_components.append(neighbour)
+				if not((neighbour in node.state) or (neighbour in possible_components)):
+					possible_components.append(neighbour)	
 		print(possible_components)
 
 
@@ -83,10 +77,7 @@ def expand(nodes,parent):
 			#print('ps', list(node.state), list(node.state).append(component),  possible_state)
 
 			# check if created state already exists
-			if check_equal_lists_2(possible_state,virtual_states):
-				pass
-			# if not create new node
-			else:
+			if not(CheckEqualLists_2(possible_state,virtual_states)):
 				# add state to list of current reached states
 				virtual_states.append(possible_state)
 				payload = graph.dict_comp[component].weight + node.payload
@@ -100,7 +91,7 @@ def expand(nodes,parent):
 	return new_nodes
 
 # check if a list is equal to one in a set of lists
-def check_equal_lists_2(list1,list_lists):
+def CheckEqualLists_2(list1,list_lists):
 	for list2 in list_lists:
 		if check_equal_lists(list1,list2):
 			return True
