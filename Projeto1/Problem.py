@@ -47,9 +47,9 @@ class Launch:
 		self.var_cost = var_cost
 
 	def __repr__(self):
-		return str(self.max_payload) + "," +  str(self.fixed_cost) + "," +  str(self.var_cost) + "\n" 	
+		return str(self.dateID) + '  ' + str(self.max_payload) + "," +  str(self.fixed_cost) + "," +  str(self.var_cost) + "\n" 	
 
-class Problem(Component, Launch):
+class Problem(object):
 
 	def __init__(self, file):
 		self.dict_comp = {}
@@ -95,10 +95,30 @@ class Problem(Component, Launch):
 		list_aux = sorted(self.dict_launch.items(), key=lambda t: t[0])
 		dict_aux = {}
 		for i in range(len(list_aux)):
-			dict_aux[i+1] = list(list_aux[i])[1] 		
+			dict_aux[i+1] = list(list_aux[i])[1]		
 		self.dict_launch = dict_aux	
 
-class Node:
+	# checks if all elements are in space
+	def GoalTest(self,node):
+		return CheckEqualLists(node.state, self.dict_comp.keys())
+
+	# traces all decisions made until the initial node
+	def Traceback(self,node):
+		decisions = []
+		final_cost = node.path_cost
+		while not(node.state == []):
+			comp1 = set(node.state)
+			comp2 = set(node.parent.state)
+			dif_comp = comp1 - comp2
+			decisions.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') + ' ' + ' '.join(dif_comp) + ' ' + str(node.path_cost-node.parent.path_cost))
+			node = node.parent
+
+		for i in range(len(decisions)):
+			print(decisions[-(i+1)])
+		print(final_cost)
+
+
+class Node(object):
 
 	def __init__(self, parent = None, state = [], depth = 0, path_cost = 0, payload = 0, n_launch = 0):
 		self.parent = parent
@@ -114,7 +134,34 @@ class Node:
 		self.n_launch = n_launch
 
 	# def __repr__(self):
-	# 	return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) + "\n"
+	# 	return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) + str(self.parent)
 
 	def print_info(self):
-		print (" state = ", self.state, " path_cost = ", self.path_cost,' d = ', self.depth, "payload = ", self.payload, "parent =" , self.parent,)
+		print (" state = ", self.state, " path_cost = ", self.path_cost,' d = ', self.depth, 'n_launch = ', self.n_launch,  "payload = ", self.payload, "parent =" , self.parent,)
+
+ 
+# -----------------------------------------------------------------------------------------
+# Auxiliary functions
+
+# check if a list is equal to one in a set of lists
+def CheckEqualLists_2(list1,list_lists):
+	for list2 in list_lists:
+		if CheckEqualLists(list1,list2):
+			return True
+	return False
+
+# auxiliar to check if two lists are equal
+def CheckEqualLists(list1,list2):
+	#if len(list1) == len(list2):
+	if set(list1) == set(list2):
+			return True
+		# else :
+		# 	return False
+		# for l1 in list1:
+		# 	if l1 in list2:
+		# 		pass
+		# 	else:
+		# 		return False
+		# return True
+	else:
+		return False
