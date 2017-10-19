@@ -41,7 +41,9 @@ class Launch(object):
 
 class Problem(object):
 
-	def __init__(self, file):
+	def __init__(self, file, mode = None):
+		# mode uniformed / informed
+		self.mode = None	
 		# dictionary of components
 		self.dict_comp = {}
 		# dicionary of launches
@@ -107,10 +109,12 @@ class Problem(object):
 
 	# traces all decisions made until the initial node
 	def Traceback(self, node):
-		while not(node.state == []):
+		while not (node.state == []):
 			dif_components = set(node.state) - set(node.parent.state)
 			dif_costs = node.path_cost-node.parent.path_cost
-			self.decisions.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') + ' ' + ' '.join(dif_components) + ' ' + str(dif_costs))
+			if node.payload != 0:
+				self.decisions.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') 
+									+ ' ' + ' '.join(dif_components) + ' ' + str(dif_costs))
 			node = node.parent
 
 	# Print All Decisions from the initial state to goal state
@@ -134,16 +138,31 @@ class Problem(object):
 			## FUNCAO DO PATH COST
 			# self.PathCostFunction(new_nodes)		
 			# actualize path_cost with fixed cost
+			
+			#if self.mode == 'U':
 			for new_node in new_nodes:
 				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
 
 			#add empty launch
-			new_nodes.append(Node(parent = node, state = node.state, path_cost = node.path_cost, depth = node.depth+1))		
+			new_nodes.append(Node(parent = node, state = node.state, 
+										path_cost = node.path_cost, 
+										depth = node.depth+1))		
+
+			#elif self.mode == 'I':
+			#	for new_node in new_nodes:
+			#		new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost + self.Heuristic()
+
+					#add empty launch
+			#	new_nodes.append(Node(parent = node, state = node.state, 
+			#							path_cost = node.path_cost + self.Heuristic(), 
+			#							depth = node.depth+1))		
+
 
 		return new_nodes
 
 
-	#def PathCostFunction(self, list_nodes):
+	def Heuristic(self, list_nodes):
+		return 0
 
 
 	def Expand(self, nodes, parent):
