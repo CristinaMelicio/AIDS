@@ -124,7 +124,7 @@ class Problem(object):
 		# all nodes derived from the recursive expansion
 		new_nodes = []
 		# not expand last node
-		if (node.depth+1) in self.dict_launch:
+		if (node.depth + 1) in self.dict_launch:
 			# nodes generated in each recursive call of expansion
 			virtual_nodes = [node]
 			while virtual_nodes:
@@ -143,7 +143,7 @@ class Problem(object):
 		return new_nodes
 
 
-	def PathCostFunction(self, list_nodes):
+	#def PathCostFunction(self, list_nodes):
 
 
 	def Expand(self, nodes, parent):
