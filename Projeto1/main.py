@@ -1,6 +1,9 @@
 from Problem import *
 from queue import PriorityQueue
 
+import time
+
+start_time = time.time()
 
 #graph = Problem("mir.txt")
 #graph = Problem("trivial1.txt")
@@ -128,6 +131,8 @@ while flag:
 			graph.n_nodes = graph.n_nodes +1
 			# place on priority queue ordered by path cost
 			frontier.put((new_node.path_cost, graph.n_nodes, new_node))
+
+print("--- %s seconds ---" % (time.time() - start_time))
 
 
 #print('saiu')
