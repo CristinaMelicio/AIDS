@@ -1,6 +1,9 @@
 from Problem import *
 from queue import PriorityQueue
 
+import cProfile
+import re
+
 import time
 
 start_time = time.time()
@@ -112,27 +115,31 @@ frontier.put((0,0,Node()))
 
 flag = True
 #for i in range(1):
-while flag:
-	cost, n_generated, node = frontier.get()
-	#print('---------------------------------------------------------------------------------------------------------')
-	#print(cost, n_generated)
-	#node.print_info()
-	#print('----------------------------------------------------------------------------------------------------------')
-	if graph.GoalTest(node):
-		#print('successsssssssssssssssss')
-		#node.print_info()
-		graph.Traceback(node)
-		flag = False
+# while flag:
+# 	cost, n_generated, node = frontier.get()
+# 	#print('---------------------------------------------------------------------------------------------------------')
+# 	#print(cost, n_generated)
+# 	#node.print_info()
+# 	#print('----------------------------------------------------------------------------------------------------------')
+# 	if graph.GoalTest(node):
+# 		#print('successsssssssssssssssss')
+# 		#node.print_info()
+# 		graph.Traceback(node)
+# 		flag = False
 		
-	else :
-		new_nodes = expand_node(node)
-		for new_node in new_nodes:
-			#new_node.print_info()
-			graph.n_nodes = graph.n_nodes +1
-			# place on priority queue ordered by path cost
-			frontier.put((new_node.path_cost, graph.n_nodes, new_node))
+# 	else :
+# 		new_nodes = expand_node(node)
+# 		for new_node in new_nodes:
+# 			#new_node.print_info()
+# 			graph.n_nodes = graph.n_nodes +1
+# 			# place on priority queue ordered by path cost
+# 			frontier.put((new_node.path_cost, graph.n_nodes, new_node))
 
-print("--- %s seconds ---" % (time.time() - start_time))
+
+cProfile.run('re.compile("foo|bar")')
+
+
+#print("--- %s seconds ---" % (time.time() - start_time))
 
 
 #print('saiu')
