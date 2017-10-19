@@ -1,7 +1,6 @@
 import datetime
-from collections import OrderedDict
 
-class Component:
+class Component(object):
 
 	def __init__(self, vID = None, weight = 0):
 		self.vID = vID 
@@ -17,16 +16,7 @@ class Component:
 	def __repr__(self):
 		return "W= " + str(self.weight) + " " + "A= " + str(self.list_adj) + "\n"
 
-	def GetID(self):
-		return self.ID
-
-	def GetWeight(self):
-		return self.weight
-
-	def GetListAdj(self):
-		return self.list_adj
-
-class Launch:
+class Launch(object):
 	
 	def __init__(self, dateID = None, max_payload = 0, fixed_cost = 0, var_cost = 0):
 		self.dateID = dateID
@@ -52,10 +42,18 @@ class Launch:
 class Problem(object):
 
 	def __init__(self, file):
+		# dictionary of components
 		self.dict_comp = {}
+		# dicionary of launches
 		self.dict_launch = {}
 		# number generated nodes
 		self.n_nodes = 0
+		# decisions to be made
+		self.decisions = []
+		# total cost
+		self.final_cost = 0
+		# initial state
+		self.initial_state = Node()
 
 		file = open(file, "r")
 
@@ -92,6 +90,7 @@ class Problem(object):
 				self.dict_launch[date_id] = Launch(date_id, max_payload, fixed_cost, var_cost)
 		
 		file.close()
+		
 		list_aux = sorted(self.dict_launch.items(), key=lambda t: t[0])
 		dict_aux = {}
 		for i in range(len(list_aux)):
@@ -99,28 +98,110 @@ class Problem(object):
 		self.dict_launch = dict_aux	
 
 	# checks if all elements are in space
-	def GoalTest(self,node):
-		return CheckEqualLists(node.state, self.dict_comp.keys())
+	def GoalTest(self, node):
+		if set(node.state) == set(self.dict_comp.keys()):
+			self.final_cost = node.path_cost
+			return True
+		else:
+			return False
 
 	# traces all decisions made until the initial node
-	def Traceback(self,node):
-		decisions = []
-		final_cost = node.path_cost
+	def Traceback(self, node):
 		while not(node.state == []):
-			comp1 = set(node.state)
-			comp2 = set(node.parent.state)
-			dif_comp = comp1 - comp2
-			decisions.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') + ' ' + ' '.join(dif_comp) + ' ' + str(node.path_cost-node.parent.path_cost))
+			dif_components = set(node.state) - set(node.parent.state)
+			dif_costs = node.path_cost-node.parent.path_cost
+			self.decisions.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') + ' ' + ' '.join(dif_components) + ' ' + str(dif_costs))
 			node = node.parent
 
-		for i in range(len(decisions)):
-			print(decisions[-(i+1)])
-		print(final_cost)
+	# Print All Decisions from the initial state to goal state
+	def PrintDecisions(self):
+		for i in range(len(self.decisions)):
+			print(self.decisions[-(i+1)])
+		print(self.final_cost)
 
+	# SucessorFunction
+	def Successor(self, node):
+		# all nodes derived from the recursive expansion
+		new_nodes = []
+		# not expand last node
+		if (node.depth+1) in self.dict_launch:
+			# nodes generated in each recursive call of expansion
+			virtual_nodes = [node]
+			while virtual_nodes:
+				virtual_nodes = self.Expand(virtual_nodes,node)
+				for virtual_node in virtual_nodes:
+					new_nodes.append(virtual_node)
+			## FUNCAO DO PATH COST
+			# self.PathCostFunction(new_nodes)		
+			# actualize path_cost with fixed cost
+			for new_node in new_nodes:
+				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
+
+			#add empty launch
+			new_nodes.append(Node(parent = node, state = node.state, path_cost = node.path_cost, depth = node.depth+1))		
+
+		return new_nodes
+
+
+	def PathCostFunction(self, list_nodes):
+
+
+	def Expand(self, nodes, parent):
+		# auxiliary to store already generated states (used for comparsion)
+		virtual_states = []
+		# stores all new nodes
+		new_virtual_nodes = []
+
+		# Case of one empty node case
+		if nodes[0].state == []:
+			node = nodes[0]
+			for component in self.dict_comp:
+				if self.dict_comp[component].weight <= self.dict_launch[node.depth + 1].max_payload:
+					state = [component]
+					path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight
+					new_virtual_nodes.append(Node(parent = node, state = state, depth = node.depth + 1, 
+													path_cost = path_cost, payload = self.dict_comp[component].weight))
+
+		# other case loop trough all received nodes
+		else:
+			for node in nodes:
+				possible_components = []
+				# collect neighbours of every component in space
+				for component in node.state:
+					neighbours = self.dict_comp[component].list_adj
+					# verify if the neighbours are already in space or were already added to the list of possible components to lauch
+					for neighbour in neighbours:
+						if not (neighbour in node.state) or (neighbour in possible_components):
+							possible_components.append(neighbour)	
+
+			for component in possible_components:
+				possible_state = list(node.state)
+				possible_state.append(component)
+				# check if created state already exists
+				if not self.CheckRepeatedlStates(possible_state, virtual_states):
+					# add state to list of current reached states
+					virtual_states.append(possible_state)
+					# if node is the parent payload we dont had past payload
+					if node == parent:
+						payload = self.dict_comp[component].weight
+					else:
+						payload = self.dict_comp[component].weight + node.payload
+					if (payload <= self.dict_launch[parent.depth + 1].max_payload):
+						path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight
+						new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
+														path_cost = path_cost, payload = payload))
+
+		return new_virtual_nodes			
+
+	def CheckRepeatedlStates(self, list1, list_lists):
+		for l in list_lists:
+			if set(list1) == set(l):
+				return True 
+		return False
 
 class Node(object):
 
-	def __init__(self, parent = None, state = [], depth = 0, path_cost = 0, payload = 0, n_launch = 0):
+	def __init__(self, parent = None, state = [], depth = 0, path_cost = 0, payload = 0):
 		self.parent = parent
 		# list with name of components already in space
 		self.state = state
@@ -130,38 +211,6 @@ class Node(object):
 		self.depth = depth
 		# payload in this launch
 		self.payload = payload
-		# for now useless, check in the end to clean if needed
-		self.n_launch = n_launch
 
-	# def __repr__(self):
-	# 	return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) + str(self.parent)
-
-	def print_info(self):
-		print (" state = ", self.state, " path_cost = ", self.path_cost,' d = ', self.depth, 'n_launch = ', self.n_launch,  "payload = ", self.payload, "parent =" , self.parent,)
-
- 
-# -----------------------------------------------------------------------------------------
-# Auxiliary functions
-
-# check if a list is equal to one in a set of lists
-def CheckEqualLists_2(list1,list_lists):
-	for list2 in list_lists:
-		if CheckEqualLists(list1,list2):
-			return True
-	return False
-
-# auxiliar to check if two lists are equal
-def CheckEqualLists(list1,list2):
-	#if len(list1) == len(list2):
-	if set(list1) == set(list2):
-			return True
-		# else :
-		# 	return False
-		# for l1 in list1:
-		# 	if l1 in list2:
-		# 		pass
-		# 	else:
-		# 		return False
-		# return True
-	else:
-		return False
+	def __repr__(self):
+		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) + str(self.parent)
