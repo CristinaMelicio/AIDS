@@ -143,30 +143,33 @@ class Problem(object):
 
 			## UNINFORMED COST			
 			# actualize path_cost with fixed cost
-			if self.mode == '-u':
-				for new_node in new_nodes:
-					new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
+			# if self.mode == '-u':
+			# 	for new_node in new_nodes:
+			# 		new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
 
-				#add empty launch
-				new_nodes.append(Node(parent = node, state = node.state, 
-											path_cost = node.path_cost, 
-											depth = node.depth+1))		
+			# 	#add empty launch
+			# 	new_nodes.append(Node(parent = node, state = node.state, 
+			# 								path_cost = node.path_cost, 
+			# 								depth = node.depth+1))		
 			## INFORMED COST		
-			elif self.mode == '-i':
-				for new_node in new_nodes:
-					new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost + self.Heuristic(new_node)
+			#elif self.mode == '-i':
+			for new_node in new_nodes:
+				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost - self.Heuristic(new_node.parent)
 
-				#add empty launch
-				new_nodes.append(Node(parent = node, state = node.state, 
-											path_cost = node.path_cost + self.Heuristic(new_node), 
-											depth = node.depth+1))					
+			#add empty launch
+			new_nodes.append(Node(parent = node, state = node.state, 
+										path_cost = node.path_cost - self.Heuristic(new_node.parent), 
+										depth = node.depth+1))					
 
 
 		return new_nodes
 
 
 	def Heuristic(self, node):
-		return 0
+		if self.mode == '-u':
+			return 0
+		elif self.mode == '-i':
+			return 1.5
 
 
 	def Expand(self, nodes, parent):
@@ -181,7 +184,7 @@ class Problem(object):
 			for component in self.dict_comp:
 				if self.dict_comp[component].weight <= self.dict_launch[node.depth + 1].max_payload:
 					state = [component]
-					path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight
+					path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight + self.Heuristic(node)
 					new_virtual_nodes.append(Node(parent = node, state = state, depth = node.depth + 1, 
 													path_cost = path_cost, payload = self.dict_comp[component].weight))
 
@@ -210,7 +213,7 @@ class Problem(object):
 					else:
 						payload = self.dict_comp[component].weight + node.payload
 					if (payload <= self.dict_launch[parent.depth + 1].max_payload):
-						path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight
+						path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight + self.Heuristic(node)
 						new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
 														path_cost = path_cost, payload = payload))
 

@@ -28,16 +28,11 @@ def main(argv):
 	frontier = 	PriorityQueue()
 
 	GeneralSearch(problem,frontier)
-	print("--- %s seconds ---" % (time.clock() - start_time))
-
-
-
-
+	
 
 if __name__ == "__main__":
 	start_time = time.clock()
 	main(sys.argv[1:])
+	print("--- %s seconds ---" % (time.clock() - start_time))
 
-
-#print('saiu')
 
