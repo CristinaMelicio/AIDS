@@ -43,7 +43,7 @@ class Problem(object):
 
 	def __init__(self, file, mode = None):
 		# mode uniformed / informed
-		self.mode = None	
+		self.mode = mode	
 		# dictionary of components
 		self.dict_comp = {}
 		# dicionary of launches
@@ -56,8 +56,12 @@ class Problem(object):
 		self.final_cost = 0
 		# initial state
 		self.initial_state = Node()
-
-		file = open(file, "r")
+		
+		try:
+			file = open(file, "r")
+		except IOError:
+			print ("ERROR: There is not such a file")
+			exit()
 
 		for line in file:
 			if line[0] == 'V':
@@ -135,33 +139,33 @@ class Problem(object):
 				virtual_nodes = self.Expand(virtual_nodes,node)
 				for virtual_node in virtual_nodes:
 					new_nodes.append(virtual_node)
-			## FUNCAO DO PATH COST
-			# self.PathCostFunction(new_nodes)		
-			# actualize path_cost with fixed cost
 			
-			#if self.mode == 'U':
-			for new_node in new_nodes:
-				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
 
-			#add empty launch
-			new_nodes.append(Node(parent = node, state = node.state, 
-										path_cost = node.path_cost, 
-										depth = node.depth+1))		
+			## UNINFORMED COST			
+			# actualize path_cost with fixed cost
+			if self.mode == '-u':
+				for new_node in new_nodes:
+					new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
 
-			#elif self.mode == 'I':
-			#	for new_node in new_nodes:
-			#		new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost + self.Heuristic()
+				#add empty launch
+				new_nodes.append(Node(parent = node, state = node.state, 
+											path_cost = node.path_cost, 
+											depth = node.depth+1))		
+			## INFORMED COST		
+			elif self.mode == '-i':
+				for new_node in new_nodes:
+					new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost + self.Heuristic(new_node)
 
-					#add empty launch
-			#	new_nodes.append(Node(parent = node, state = node.state, 
-			#							path_cost = node.path_cost + self.Heuristic(), 
-			#							depth = node.depth+1))		
+				#add empty launch
+				new_nodes.append(Node(parent = node, state = node.state, 
+											path_cost = node.path_cost + self.Heuristic(new_node), 
+											depth = node.depth+1))					
 
 
 		return new_nodes
 
 
-	def Heuristic(self, list_nodes):
+	def Heuristic(self, node):
 		return 0
 
 
