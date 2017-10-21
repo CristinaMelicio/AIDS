@@ -150,14 +150,6 @@ class Problem(object):
 			# nodes generated in each recursive call of expansion
 			virtual_nodes = [node]
 			
-
-			#add empty launch
-			new_nodes.append(Node(parent = node, state = node.state, 
-										path_cost = node.path_cost, 
-										depth = node.depth+1))	
-
-			print("escolha:", node.state)
-
 			while virtual_nodes:
 				virtual_nodes = self.Expand(virtual_nodes, node)
 				for virtual_node in virtual_nodes:
@@ -167,9 +159,13 @@ class Problem(object):
 			for new_node in new_nodes:
 				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
 
-			
-							
-			
+			#add empty launch
+			new_nodes.append(Node(parent = node, state = node.state, 
+										path_cost = node.path_cost, 
+										depth = node.depth+1))	
+
+			print("escolha:", node.state)
+
 
 		return new_nodes
 
