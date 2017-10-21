@@ -41,13 +41,24 @@ class Launch(object):
 
 class Problem(object):
 
-	def FPathCost(self, node):
-		return 0
-	def FPathCostHeur(self, node):
-		return 0
+	def FPathCost(self, node, parent):
+		return node.path_cost + self.dict_launch[node.depth].fixed_cost
+	def FPathCostHeur(self, node, parent):
+		f = self.FPathCost(node,parent)
+		node.heuristic = self.Heuristic(node)
+		return (f + node.heuristic - parent.heuristic)
 	
-	#def func(self, methodToRun, node):
-	#   return methodToRun(node)
+	def Heuristic(self, node):	
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		if left_states == 0: 
+			return 0 
+		else:
+			total_weight = 0
+			for state in left_states:
+				total_weight = total_weight + self.dict_comp[state].weight 
+
+			return self.dict_launch[node.depth].fixed_cost + total_weight * self.dict_launch[node.depth].var_cost
+		
 
 	def __init__(self, file, mode = None):
 		# mode uniformed / informed
@@ -64,8 +75,8 @@ class Problem(object):
 		self.final_cost = 0
 		# initial state
 		self.initial_state = Node()
-		
 
+		
 		if mode == '-u':
 			self.func = self.FPathCost
 		elif mode == '-i':
@@ -156,8 +167,7 @@ class Problem(object):
 					new_nodes.append(virtual_node)
 			
 			for new_node in new_nodes:
-				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
-
+				new_node.path_cost = self.func(new_node, node)
 			#add empty launch
 			new_nodes.append(Node(parent = node, state = node.state, 
 										path_cost = node.path_cost, 
@@ -184,8 +194,6 @@ class Problem(object):
 					path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight
 					new_virtual_nodes.append(Node(parent = node, state = state, depth = node.depth + 1, 
 													path_cost = path_cost, payload = self.dict_comp[component].weight))
-
-					#print(component)
 
 		# other case loop trough all received nodes
 		else:
@@ -239,6 +247,8 @@ class Node(object):
 		self.depth = depth
 		# payload in this launch
 		self.payload = payload
+		# 
+		self.heuristic = 0
 
 	def __repr__(self):
 		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) + str(self.parent)
