@@ -41,10 +41,13 @@ class Launch(object):
 
 class Problem(object):
 
-	def FPathCost(self):
+	def FPathCost(self, node):
 		return 0
-	def FPathCostHeur(self):
+	def FPathCostHeur(self, node):
 		return 0
+	
+	#def func(self, methodToRun, node):
+	#   return methodToRun(node)
 
 	def __init__(self, file, mode = None):
 		# mode uniformed / informed
@@ -62,10 +65,11 @@ class Problem(object):
 		# initial state
 		self.initial_state = Node()
 		
+
 		if mode == '-u':
-			self.func = self.FPathCost()
+			self.func = self.FPathCost
 		elif mode == '-i':
-			self.func = self.FPathCostHeur()
+			self.func = self.FPathCostHeur
 
 		try:
 			file = open(file, "r")
@@ -104,7 +108,7 @@ class Problem(object):
 				var_cost = float(line.split()[4])
 				
 				self.dict_launch[date_id] = Launch(date_id, max_payload, fixed_cost, var_cost)
-		
+
 		file.close()
 		
 		list_aux = sorted(self.dict_launch.items(), key=lambda t: t[0])
@@ -112,7 +116,7 @@ class Problem(object):
 		for i in range(len(list_aux)):
 			dict_aux[i+1] = list(list_aux[i])[1]		
 		self.dict_launch = dict_aux	
-
+		
 	# checks if all elements are in space
 	def GoalTest(self, node):
 		if set(node.state) == set(self.dict_comp.keys()):
@@ -145,41 +149,29 @@ class Problem(object):
 		if (node.depth + 1) in self.dict_launch:
 			# nodes generated in each recursive call of expansion
 			virtual_nodes = [node]
+			
+
+			#add empty launch
+			new_nodes.append(Node(parent = node, state = node.state, 
+										path_cost = node.path_cost, 
+										depth = node.depth+1))	
+
+			print("escolha:", node.state)
+
 			while virtual_nodes:
 				virtual_nodes = self.Expand(virtual_nodes, node)
 				for virtual_node in virtual_nodes:
 					new_nodes.append(virtual_node)
+					print(virtual_node.depth, virtual_node.parent.state, virtual_node.state)
+			
+			for new_node in new_nodes:
+				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
+
+			
+							
 			
 
-			## UNINFORMED COST			
-			# actualize path_cost with fixed cost
-			# if self.mode == '-u':
-			# 	for new_node in new_nodes:
-			# 		new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
-
-			# 	#add empty launch
-			# 	new_nodes.append(Node(parent = node, state = node.state, 
-			# 								path_cost = node.path_cost, 
-			# 								depth = node.depth+1))		
-			## INFORMED COST		
-			#elif self.mode == '-i':
-			for new_node in new_nodes:
-				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost - self.Heuristic(new_node.parent)
-
-			#add empty launch
-			new_nodes.append(Node(parent = node, state = node.state, 
-										path_cost = node.path_cost - self.Heuristic(new_node.parent), 
-										depth = node.depth+1))					
-
-
 		return new_nodes
-
-
-	def Heuristic(self, node):
-		if self.mode == '-u':
-			return 0
-		elif self.mode == '-i':
-			return 1.5
 
 
 	def Expand(self, nodes, parent):
@@ -194,9 +186,8 @@ class Problem(object):
 			for component in self.dict_comp:
 				if self.dict_comp[component].weight <= self.dict_launch[node.depth + 1].max_payload:
 					state = [component]
-					path_cost = self.func(node) 
-
-					#path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight + self.Heuristic(node)
+					#path_cost = self.func(node) 
+					path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight
 					new_virtual_nodes.append(Node(parent = node, state = state, depth = node.depth + 1, 
 													path_cost = path_cost, payload = self.dict_comp[component].weight))
 
@@ -225,8 +216,8 @@ class Problem(object):
 					else:
 						payload = self.dict_comp[component].weight + node.payload
 					if (payload <= self.dict_launch[parent.depth + 1].max_payload):
-						path_cost = self.func(node) 
-						#path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight + self.Heuristic(node)
+						#path_cost = self.func(node) 
+						path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight
 						new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
 														path_cost = path_cost, payload = payload))
 

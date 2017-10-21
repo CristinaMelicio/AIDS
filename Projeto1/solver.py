@@ -1,4 +1,4 @@
-from Problem import *
+from DomainDependent import *
 from DomainIndependent import *
 from queue import PriorityQueue
 import time
