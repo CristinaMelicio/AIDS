@@ -11,22 +11,15 @@ def print_queue(queue):
 		node.print_info()
 
 def main(argv):
-	inputfile = ''
 	try:
-		opts, args = getopt.getopt(argv,"hi:u:",["ifile="])
-	except getopt.GetoptError:
+		problem = Problem(sys.argv[2], sys.argv[1])
+		
+	except:
 		print("solver.py -i <inputfile> -u <inputfile>")
 		sys.exit(2)
-		
-	for opt, arg in opts:
-		if opt == '-h':
-			print("solver.py -i <inputfile> -u <inputfile>")
-			sys.exit()
-		
-	problem = Problem(sys.argv[2], sys.argv[1])
+	
 		
 	frontier = 	PriorityQueue()
-
 	GeneralSearch(problem,frontier)
 	
 

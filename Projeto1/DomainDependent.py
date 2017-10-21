@@ -151,8 +151,9 @@ class Problem(object):
 			virtual_nodes = [node]
 			
 
-			print("no:", node.state, "d = ", node.depth, "cost = ", node.path_cost, "payload =", node.payload)
 
+			print("no:", node.state, "d = ", node.depth, "cost = ", node.path_cost, "payload =", node.payload)
+			
 			while virtual_nodes:
 				virtual_nodes = self.Expand(virtual_nodes, node)
 				for virtual_node in virtual_nodes:
@@ -166,7 +167,6 @@ class Problem(object):
 			new_nodes.append(Node(parent = node, state = node.state, 
 										path_cost = node.path_cost, 
 										depth = node.depth+1))	
-			
 
 		return new_nodes
 
