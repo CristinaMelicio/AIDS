@@ -41,6 +41,11 @@ class Launch(object):
 
 class Problem(object):
 
+	def FPathCost(self):
+		return 0
+	def FPathCostHeur(self):
+		return 0
+
 	def __init__(self, file, mode = None):
 		# mode uniformed / informed
 		self.mode = mode	
@@ -57,6 +62,11 @@ class Problem(object):
 		# initial state
 		self.initial_state = Node()
 		
+		if mode == '-u':
+			self.func = self.FPathCost()
+		elif mode == '-i':
+			self.func = self.FPathCostHeur()
+
 		try:
 			file = open(file, "r")
 		except IOError:
@@ -136,7 +146,7 @@ class Problem(object):
 			# nodes generated in each recursive call of expansion
 			virtual_nodes = [node]
 			while virtual_nodes:
-				virtual_nodes = self.Expand(virtual_nodes,node)
+				virtual_nodes = self.Expand(virtual_nodes, node)
 				for virtual_node in virtual_nodes:
 					new_nodes.append(virtual_node)
 			
@@ -184,7 +194,9 @@ class Problem(object):
 			for component in self.dict_comp:
 				if self.dict_comp[component].weight <= self.dict_launch[node.depth + 1].max_payload:
 					state = [component]
-					path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight + self.Heuristic(node)
+					path_cost = self.func(node) 
+
+					#path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight + self.Heuristic(node)
 					new_virtual_nodes.append(Node(parent = node, state = state, depth = node.depth + 1, 
 													path_cost = path_cost, payload = self.dict_comp[component].weight))
 
@@ -213,7 +225,8 @@ class Problem(object):
 					else:
 						payload = self.dict_comp[component].weight + node.payload
 					if (payload <= self.dict_launch[parent.depth + 1].max_payload):
-						path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight + self.Heuristic(node)
+						path_cost = self.func(node) 
+						#path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight + self.Heuristic(node)
 						new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
 														path_cost = path_cost, payload = payload))
 
