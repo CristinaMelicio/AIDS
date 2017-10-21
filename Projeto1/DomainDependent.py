@@ -150,15 +150,10 @@ class Problem(object):
 			# nodes generated in each recursive call of expansion
 			virtual_nodes = [node]
 			
-
-
-			print("no:", node.state, "d = ", node.depth, "cost = ", node.path_cost, "payload =", node.payload)
-			
 			while virtual_nodes:
 				virtual_nodes = self.Expand(virtual_nodes, node)
 				for virtual_node in virtual_nodes:
 					new_nodes.append(virtual_node)
-					print(virtual_node.depth, virtual_node.parent.state, virtual_node.state)
 			
 			for new_node in new_nodes:
 				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
@@ -177,8 +172,10 @@ class Problem(object):
 		# stores all new nodes
 		new_virtual_nodes = []
 
+
 		# Case of one empty node case
 		if nodes[0].state == []:
+			#print('case []')
 			node = nodes[0]
 			for component in self.dict_comp:
 				if self.dict_comp[component].weight <= self.dict_launch[node.depth + 1].max_payload:
@@ -188,8 +185,11 @@ class Problem(object):
 					new_virtual_nodes.append(Node(parent = node, state = state, depth = node.depth + 1, 
 													path_cost = path_cost, payload = self.dict_comp[component].weight))
 
+					#print(component)
+
 		# other case loop trough all received nodes
 		else:
+			
 			for node in nodes:
 				possible_components = []
 				# collect neighbours of every component in space
@@ -198,25 +198,26 @@ class Problem(object):
 					# verify if the neighbours are already in space or were already added to the list of possible components to lauch
 					for neighbour in neighbours:
 						if not (neighbour in node.state) or (neighbour in possible_components):
-							possible_components.append(neighbour)	
-
-			for component in possible_components:
-				possible_state = list(node.state)
-				possible_state.append(component)
-				# check if created state already exists
-				if not self.CheckRepeatedlStates(possible_state, virtual_states):
-					# add state to list of current reached states
-					virtual_states.append(possible_state)
-					# if node is the parent payload we dont had past payload
-					if node == parent:
-						payload = self.dict_comp[component].weight
-					else:
-						payload = self.dict_comp[component].weight + node.payload
-					if (payload <= self.dict_launch[parent.depth + 1].max_payload):
-						#path_cost = self.func(node) 
-						path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight
-						new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
-														path_cost = path_cost, payload = payload))
+							possible_components.append(neighbour)
+							
+			
+				for component in possible_components:
+					possible_state = list(node.state)
+					possible_state.append(component)
+					# check if created state already exists
+					if not self.CheckRepeatedlStates(possible_state, virtual_states):
+						# add state to list of current reached states
+						virtual_states.append(possible_state)
+						# if node is the parent payload we dont had past payload
+						if node == parent:
+							payload = self.dict_comp[component].weight
+						else:
+							payload = self.dict_comp[component].weight + node.payload
+						if (payload <= self.dict_launch[parent.depth + 1].max_payload):
+							#path_cost = self.func(node) 
+							path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight
+							new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
+															path_cost = path_cost, payload = payload))
 
 		return new_virtual_nodes			
 

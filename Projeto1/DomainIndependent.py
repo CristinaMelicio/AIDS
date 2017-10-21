@@ -4,8 +4,8 @@ def GeneralSearch(problem, strategy):
 	strategy.put((0,0,problem.initial_state))
 	flag = True
 
-	for i in range(3):
-	#while flag:
+	#for i in range(2):
+	while flag:
 		_, _, node = strategy.get()
 		if problem.GoalTest(node):
 			problem.Traceback(node)
