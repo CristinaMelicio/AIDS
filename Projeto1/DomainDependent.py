@@ -151,12 +151,7 @@ class Problem(object):
 			virtual_nodes = [node]
 			
 
-			#add empty launch
-			new_nodes.append(Node(parent = node, state = node.state, 
-										path_cost = node.path_cost, 
-										depth = node.depth+1))	
-
-			print("escolha:", node.state)
+			print("no:", node.state, "d = ", node.depth, "cost = ", node.path_cost, "payload =", node.payload)
 
 			while virtual_nodes:
 				virtual_nodes = self.Expand(virtual_nodes, node)
@@ -167,8 +162,10 @@ class Problem(object):
 			for new_node in new_nodes:
 				new_node.path_cost = new_node.path_cost + self.dict_launch[node.depth+1].fixed_cost
 
-			
-							
+			#add empty launch
+			new_nodes.append(Node(parent = node, state = node.state, 
+										path_cost = node.path_cost, 
+										depth = node.depth+1))	
 			
 
 		return new_nodes
