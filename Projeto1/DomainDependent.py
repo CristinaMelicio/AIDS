@@ -41,25 +41,6 @@ class Launch(object):
 
 class Problem(object):
 
-	def FPathCost(self, node, parent):
-		return node.path_cost + self.dict_launch[node.depth].fixed_cost
-	def FPathCostHeur(self, node, parent):
-		f = self.FPathCost(node,parent)
-		node.heuristic = self.Heuristic(node)
-		return (f + node.heuristic - parent.heuristic)
-	
-	def Heuristic(self, node):	
-		left_states = set(self.dict_comp.keys()) - set(node.state)	
-		if left_states == 0: 
-			return 0 
-		else:
-			total_weight = 0
-			for state in left_states:
-				total_weight = total_weight + self.dict_comp[state].weight 
-
-			return self.dict_launch[node.depth].fixed_cost + total_weight * self.dict_launch[node.depth].var_cost
-		
-
 	def __init__(self, file, mode = None):
 		# mode uniformed / informed
 		self.mode = mode	
@@ -75,7 +56,6 @@ class Problem(object):
 		self.final_cost = 0
 		# initial state
 		self.initial_state = Node()
-
 		
 		if mode == '-u':
 			self.func = self.FPathCost
@@ -175,7 +155,6 @@ class Problem(object):
 
 		return new_nodes
 
-
 	def Expand(self, nodes, parent):
 		# auxiliary to store already generated states (used for comparsion)
 		virtual_states = []
@@ -228,6 +207,28 @@ class Problem(object):
 															path_cost = path_cost, payload = payload))
 
 		return new_virtual_nodes			
+
+	def FPathCost(self, node, parent):
+		return node.path_cost + self.dict_launch[node.depth].fixed_cost
+	
+	def FPathCostHeur(self, node, parent):
+		f = self.FPathCost(node,parent)
+		node.heuristic = self.Heuristic(node)
+		return (f + node.heuristic - parent.heuristic)
+	
+	def Heuristic(self, node):	
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		total_weight = 0
+		
+		for state in left_states:
+			total_weight = total_weight + self.dict_comp[state].weight 
+		
+		lista = [self.dict_launch[x].fixed_cost + total_weight * self.dict_launch[x].var_cost
+					for x in range(node.depth,len(self.dict_launch))] 
+		
+		if lista == []:
+			return 0
+		return min(lista)
 
 	def CheckRepeatedlStates(self, list1, list_lists):
 		for l in list_lists:
