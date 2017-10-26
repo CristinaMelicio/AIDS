@@ -136,7 +136,7 @@ class Problem(object):
 		s = ""
 		for i in range(len(self.decisions)):
 			s += str(self.decisions[-(i+1)]) + "\n"
-		s += ("%.10f")%self.final_cost
+		s += ("%.6f")%self.final_cost
 		return s
 
 	# SucessorFunction
@@ -144,23 +144,23 @@ class Problem(object):
 		# all nodes derived from the recursive expansion
 		new_nodes = []
 
-		if self.CheckPossiblePayload(node) == True:
+		#if self.CheckPossiblePayload(node) == True:
 			# not expand last node
-			if (node.depth + 1) in self.dict_launch:
-				# nodes generated in each recursive call of expansion
-				virtual_nodes = [node]
-				
-				while virtual_nodes:
-					virtual_nodes = self.Expand(virtual_nodes, node)
-					for virtual_node in virtual_nodes:
-						new_nodes.append(virtual_node)
-				
-				for new_node in new_nodes:
-					new_node.path_cost = self.func(new_node, node)
-				#add empty launch
-				new_nodes.append(Node(parent = node, state = node.state, 
-											path_cost = node.path_cost, 
-											depth = node.depth+1))	
+		if (node.depth + 1) in self.dict_launch:
+			# nodes generated in each recursive call of expansion
+			virtual_nodes = [node]
+			
+			while virtual_nodes:
+				virtual_nodes = self.Expand(virtual_nodes, node)
+				for virtual_node in virtual_nodes:
+					new_nodes.append(virtual_node)
+			
+			for new_node in new_nodes:
+				new_node.path_cost = self.func(new_node, node)
+			#add empty launch
+			new_nodes.append(Node(parent = node, state = node.state, 
+										path_cost = node.path_cost, 
+										depth = node.depth+1))	
 
 		return new_nodes
 
@@ -220,7 +220,7 @@ class Problem(object):
 	
 	def FPathCostHeur(self, node, parent):
 		f = self.FPathCost(node,parent)
-		node.heuristic = self.Heuristic2(node)
+		node.heuristic = self.Heuristic1(node)
 		#print(node)
 		return (f + node.heuristic - parent.heuristic)
 	
@@ -290,7 +290,7 @@ class Problem(object):
 
 		#print(weight_missing,weight_possible)
 
-		if weight_missing < weight_possible:
+		if weight_missing <= weight_possible:
 			return True
 		else:
 			return False
