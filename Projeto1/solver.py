@@ -14,7 +14,7 @@ def main(argv):
 	try:
 		problem = Problem(sys.argv[2], sys.argv[1])
 		
-	except :
+	except getopt.GetoptError:
 		print("solver.py -i <inputfile> -u <inputfile>")
 		sys.exit(2)
 	
