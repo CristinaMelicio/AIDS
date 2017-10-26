@@ -1,28 +1,23 @@
 from DomainDependent import *
 from DomainIndependent import *
-from queue import PriorityQueue
+#from queue import PriorityQueue
 import time
 import sys, getopt
-
-
-def print_queue(queue):
-	while not(queue.empty()):
-		node = queue.get()[2]
-		node.print_info()
+from Heap import *
 
 def main(argv):
-	try:
+	try:																																																																																																																																																														
 		problem = Problem(sys.argv[2], sys.argv[1])
-		
-	except getopt.GetoptError:
+	except :
 		print("solver.py -i <inputfile> -u <inputfile>")
 		sys.exit(2)
+
+	#frontier = 	PriorityQueue()
 	
-	#problem = Problem("mir.txt", "-i")
-		
-	frontier = 	PriorityQueue()
+	#GeneralSearch(problem,frontier)
+	frontier = HeapQueue()
 	GeneralSearch(problem,frontier)
-	
+		
 
 if __name__ == "__main__":
 	start_time = time.clock()

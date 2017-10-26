@@ -253,4 +253,16 @@ class Node(object):
 		#
 
 	def __repr__(self):
-		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) + str(self.parent)
+		return " state " + str(self.state) + " path_cost " + str(self.path_cost) + ' d ' + str(self.depth) + ' parent '+ str(self.parent)
+
+	def __lt__(self,other):
+		return self.path_cost < other.path_cost
+
+	def __eq__(self,other):
+		if self.depth != other.depth:
+			return False
+
+		if set(self.state) == set(other.state):
+			return True
+
+		return False
