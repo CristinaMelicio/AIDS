@@ -143,22 +143,24 @@ class Problem(object):
 	def Successor(self, node):
 		# all nodes derived from the recursive expansion
 		new_nodes = []
-		# not expand last node
-		if (node.depth + 1) in self.dict_launch:
-			# nodes generated in each recursive call of expansion
-			virtual_nodes = [node]
-			
-			while virtual_nodes:
-				virtual_nodes = self.Expand(virtual_nodes, node)
-				for virtual_node in virtual_nodes:
-					new_nodes.append(virtual_node)
-			
-			for new_node in new_nodes:
-				new_node.path_cost = self.func(new_node, node)
-			#add empty launch
-			new_nodes.append(Node(parent = node, state = node.state, 
-										path_cost = node.path_cost, 
-										depth = node.depth+1))	
+
+		if self.CheckPossiblePayload(node) == True:
+			# not expand last node
+			if (node.depth + 1) in self.dict_launch:
+				# nodes generated in each recursive call of expansion
+				virtual_nodes = [node]
+				
+				while virtual_nodes:
+					virtual_nodes = self.Expand(virtual_nodes, node)
+					for virtual_node in virtual_nodes:
+						new_nodes.append(virtual_node)
+				
+				for new_node in new_nodes:
+					new_node.path_cost = self.func(new_node, node)
+				#add empty launch
+				new_nodes.append(Node(parent = node, state = node.state, 
+											path_cost = node.path_cost, 
+											depth = node.depth+1))	
 
 		return new_nodes
 
@@ -274,6 +276,25 @@ class Problem(object):
 			if set(list1) == set(l):
 				return True 
 		return False
+
+	def CheckPossiblePayload(self,node):
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		weight_missing = 0
+		weight_possible = 0
+		
+		for state in left_states:
+			weight_missing = weight_missing + self.dict_comp[state].weight 
+
+		for i in range(node.depth,len(self.dict_launch)):
+			weight_possible = weight_possible + self.dict_launch[i+1].max_payload
+
+		#print(weight_missing,weight_possible)
+
+		if weight_missing < weight_possible:
+			return True
+		else:
+			return False
+
 
 class Node(object):
 
