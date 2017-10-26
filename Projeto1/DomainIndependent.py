@@ -8,7 +8,7 @@ def GeneralSearch(problem, strategy):
 		node = strategy.get()
 		if problem.GoalTest(node):
 			problem.Traceback(node)
-			problem.PrintDecisions()
+			return(problem.PrintDecisions())
 			flag = False
 			
 		else:

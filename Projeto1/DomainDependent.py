@@ -133,9 +133,11 @@ class Problem(object):
 
 	# Print All Decisions from the initial state to goal state
 	def PrintDecisions(self):
+		s = ""
 		for i in range(len(self.decisions)):
-			print(self.decisions[-(i+1)])
-		print(self.final_cost)
+			s += str(self.decisions[-(i+1)]) + "\n"
+		s += ("%.10f")%self.final_cost
+		return s
 
 	# SucessorFunction
 	def Successor(self, node):
