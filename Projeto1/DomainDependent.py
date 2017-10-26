@@ -133,33 +133,40 @@ class Problem(object):
 
 	# Print All Decisions from the initial state to goal state
 	def PrintDecisions(self):
-		s = ""
 		for i in range(len(self.decisions)):
-			s += str(self.decisions[-(i+1)]) + "\n"
-		s += ("%.6f")%self.final_cost
-		return s
+			print(self.decisions[-(i+1)])
+		print(self.final_cost)
+
+		# s = ""
+		# for i in range(len(self.decisions)):
+		# 	s += str(self.decisions[-(i+1)]) + "\n"
+		# s += ("%.6f")%self.final_cost
+		# return s
 
 	# SucessorFunction
 	def Successor(self, node):
 		# all nodes derived from the recursive expansion
 		new_nodes = []
 
-		#if self.CheckPossiblePayload(node) == True:
+		if self.CheckPossiblePayload(node) == True:
 			# not expand last node
-		if (node.depth + 1) in self.dict_launch:
-			# nodes generated in each recursive call of expansion
-			virtual_nodes = [node]
-			
-			while virtual_nodes:
-				virtual_nodes = self.Expand(virtual_nodes, node)
-				for virtual_node in virtual_nodes:
-					new_nodes.append(virtual_node)
-			
-			for new_node in new_nodes:
-				new_node.path_cost = self.func(new_node, node)
-			#add empty launch
-			new_nodes.append(Node(parent = node, state = node.state, 
-										path_cost = node.path_cost, 
+			if (node.depth + 1) in self.dict_launch:
+				# nodes generated in each recursive call of expansion
+				virtual_nodes = [node]
+				
+				while virtual_nodes:
+					virtual_nodes = self.Expand(virtual_nodes, node)
+					for virtual_node in virtual_nodes:
+						new_nodes.append(virtual_node)
+				
+				for new_node in new_nodes:
+					new_node.path_cost = self.func(new_node, node)
+				#add empty launch
+				path_cost = node.path_cost
+				# if node.depth != 0:
+				# 	path_cost = path_cost-node.parent.heuristic
+				new_nodes.append(Node(parent = node, state = node.state, 
+										path_cost = path_cost, 
 										depth = node.depth+1))	
 
 		return new_nodes
@@ -231,9 +238,23 @@ class Problem(object):
 		for state in left_states:
 			total_weight = total_weight + self.dict_comp[state].weight 
 		
-		lista = [self.dict_launch[x].fixed_cost + total_weight * self.dict_launch[x].var_cost
+		lista = [self.dict_launch[x+1].fixed_cost + total_weight * self.dict_launch[x+1].var_cost
 					for x in range(node.depth,len(self.dict_launch))] 
 		
+		if lista == []:
+			return 0
+		return min(lista)
+
+	def Heuristic3(self,node):
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		total_weight = 0
+		
+		for state in left_states:
+			total_weight = total_weight + self.dict_comp[state].weight 
+		
+		lista = [self.dict_launch[x+1].cost_density*total_weight
+					for x in range(node.depth,len(self.dict_launch))] 
+		#print(node.depth,lista,len(self.dict_launch))
 		if lista == []:
 			return 0
 		return min(lista)

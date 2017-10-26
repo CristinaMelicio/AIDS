@@ -1,6 +1,6 @@
 from DomainDependent import *
 from DomainIndependent import *
-#from queue import PriorityQueue
+from queue import PriorityQueue
 import time
 import sys, getopt
 from Heap import *
@@ -12,16 +12,15 @@ def main(argv):
 		print("solver.py -i <inputfile> -u <inputfile>")
 		sys.exit(2)
 
-	#frontier = 	PriorityQueue()
+	frontier = 	PriorityQueue()
 	
-	#GeneralSearch(problem,frontier)
-	frontier = HeapQueue()
-	return(GeneralSearch(problem,frontier))
+	GeneralSearch(problem,frontier)
+	# frontier = HeapQueue()
+	#return(GeneralSearch(problem,frontier))
 	
-
 if __name__ == "__main__":
 	start_time = time.clock()
-	print(main(sys.argv))
+	main(sys.argv)
 	print("--- %s seconds ---" % (time.clock() - start_time))
 
 
