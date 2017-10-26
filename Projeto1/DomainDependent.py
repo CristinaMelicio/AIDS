@@ -42,7 +42,7 @@ class Launch(object):
 		self.var_cost = var_cost
 
 	def __repr__(self):
-		return str(self.dateID) + '  ' + str(self.max_payload) + "," +  str(self.fixed_cost) + "," +  str(self.var_cost) + "\n" 	
+		return str(self.dateID) + '  ' + str(self.max_payload) + "," +  str(self.fixed_cost) + "," +  str(self.var_cost) + "," + str(self.cost_density) + "\n" 	
 
 class Problem(object):
 
@@ -51,7 +51,7 @@ class Problem(object):
 		self.mode = mode	
 		# dictionary of components
 		self.dict_comp = {}
-		# dicionary of launches
+		# dicionary of launches (ordered by date, key goes from 1 to number of launches)
 		self.dict_launch = {}
 		# number generated nodes
 		self.n_nodes = 0
@@ -102,15 +102,14 @@ class Problem(object):
 				max_payload = float(line.split()[2])
 				fixed_cost = float(line.split()[3])
 				var_cost = float(line.split()[4])
-				
 				self.dict_launch[date_id] = Launch(date_id, max_payload, fixed_cost, var_cost)
 
 		file.close()
 		
-		list_aux = sorted(self.dict_launch.items(), key=lambda t: t[0])
+		list_aux = sorted(self.dict_launch.items(), key=lambda t: t[0])		
 		dict_aux = {}
 		for i in range(len(list_aux)):
-			dict_aux[i+1] = list(list_aux[i])[1]		
+			dict_aux[i+1] = list(list_aux[i])[1]	
 		self.dict_launch = dict_aux	
 
 		
@@ -217,7 +216,8 @@ class Problem(object):
 	
 	def FPathCostHeur(self, node, parent):
 		f = self.FPathCost(node,parent)
-		node.heuristic = self.Heuristic1(node)
+		node.heuristic = self.Heuristic2(node)
+		#print(node)
 		return (f + node.heuristic - parent.heuristic)
 	
 	def Heuristic1(self, node):	
@@ -234,19 +234,38 @@ class Problem(object):
 			return 0
 		return min(lista)
 
+
 	def Heuristic2(self,node):
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
 		total_weight = 0
+		heuristic = 0
+		#print(node)
 		
-		for state in left_states:
-			total_weight = total_weight + self.dict_comp[state].weight
+		if node.depth+1 in self.dict_launch:
+			for state in left_states:
+				total_weight = total_weight + self.dict_comp[state].weight
 
-		ordered_costs = 	PriorityQueue() 
+			lista = sorted([[self.dict_launch[x].cost_density,x] for x in range(node.depth,len(self.dict_launch))] , key=lambda t: t[0])
+			#print(lista)
 
-		while total_weight > 0:
+		
+			while total_weight != 0:
+				for launch in lista:
+					# print(launch)
+					# print(self.dict_launch[launch[1]].max_payload)			
+					if self.dict_launch[launch[1]].max_payload < total_weight :
+						total_weight = total_weight - self.dict_launch[launch[1]].max_payload;
+						heuristic = self.dict_launch[launch[1]].cost_density*self.dict_launch[launch[1]].max_payload;
+						#print('h1',heuristic)
+					else:
+						heuristic = heuristic + self.dict_launch[launch[1]].cost_density*total_weight
+						total_weight = 0
+						#print('h2',heuristic)
+						break
+		#print(heuristic)
 
+		return heuristic
 
-			pass
 
 	def CheckRepeatedlStates(self, list1, list_lists):
 		for l in list_lists:
@@ -271,4 +290,4 @@ class Node(object):
 		#
 
 	def __repr__(self):
-		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) + str(self.parent)
+		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) +  "h = " + str(self.heuristic)
