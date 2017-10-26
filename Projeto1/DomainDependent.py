@@ -55,7 +55,7 @@ class Problem(object):
 		# total cost
 		self.final_cost = 0
 		# initial state
-		self.initial_state = Node()
+		self.initial_state = Node()		
 		
 		if mode == '-u':
 			self.func = self.FPathCost
@@ -107,6 +107,12 @@ class Problem(object):
 		for i in range(len(list_aux)):
 			dict_aux[i+1] = list(list_aux[i])[1]		
 		self.dict_launch = dict_aux	
+
+		# actual left total weight
+		self.left_weight = sum(self.dict_comp.weight)
+		# possible payload available
+		self.left_payload = sum(self.dict_launch.max_payload)
+
 		
 	# checks if all elements are in space
 	def GoalTest(self, node):
@@ -187,7 +193,6 @@ class Problem(object):
 						if not (neighbour in node.state) or (neighbour in possible_components):
 							possible_components.append(neighbour)
 							
-			
 				for component in possible_components:
 					possible_state = list(node.state)
 					possible_state.append(component)
@@ -201,7 +206,6 @@ class Problem(object):
 						else:
 							payload = self.dict_comp[component].weight + node.payload
 						if (payload <= self.dict_launch[parent.depth + 1].max_payload):
-							#path_cost = self.func(node) 
 							path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight
 							new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
 															path_cost = path_cost, payload = payload))
@@ -230,6 +234,7 @@ class Problem(object):
 			return 0
 		return min(lista)
 
+
 	def CheckRepeatedlStates(self, list1, list_lists):
 		for l in list_lists:
 			if set(list1) == set(l):
@@ -250,6 +255,7 @@ class Node(object):
 		self.payload = payload
 		# 
 		self.heuristic = 0
+		#
 
 	def __repr__(self):
 		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) + str(self.parent)
