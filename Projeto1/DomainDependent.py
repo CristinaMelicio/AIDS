@@ -108,11 +108,6 @@ class Problem(object):
 			dict_aux[i+1] = list(list_aux[i])[1]		
 		self.dict_launch = dict_aux	
 
-		# actual left total weight
-		self.left_weight = sum(self.dict_comp.weight)
-		# possible payload available
-		self.left_payload = sum(self.dict_launch.max_payload)
-
 		
 	# checks if all elements are in space
 	def GoalTest(self, node):

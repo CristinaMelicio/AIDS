@@ -14,10 +14,11 @@ def main(argv):
 	try:
 		problem = Problem(sys.argv[2], sys.argv[1])
 		
-	except:
+	except :
 		print("solver.py -i <inputfile> -u <inputfile>")
 		sys.exit(2)
 	
+	#problem = Problem("mir.txt", "-i")
 		
 	frontier = 	PriorityQueue()
 	GeneralSearch(problem,frontier)
