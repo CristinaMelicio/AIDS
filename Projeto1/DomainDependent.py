@@ -283,10 +283,10 @@ class Problem(object):
 		for state in left_states:
 			weight_missing = weight_missing + self.dict_comp[state].weight 
 
-		for i in range(node.depth+1,len(self.dict_launch)):
-			weight_possible = weight_possible + self.dict_launch[i].max_payload
+		for i in range(node.depth,len(self.dict_launch)):
+			weight_possible = weight_possible + self.dict_launch[i+1].max_payload
 
-		print(weight_missing,weight_possible)
+		#print(weight_missing,weight_possible)
 
 		if weight_missing < weight_possible:
 			return True
