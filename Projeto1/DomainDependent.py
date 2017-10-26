@@ -1,4 +1,5 @@
 import datetime
+import sys
 
 class Component(object):
 
@@ -23,6 +24,10 @@ class Launch(object):
 		self.max_payload = max_payload
 		self.fixed_cost = fixed_cost
 		self.var_cost = var_cost
+		if(max_payload != 0):
+			self.cost_density = (fixed_cost+var_cost*max_payload)/max_payload
+		else:
+			self.cost_density = float("inf")
 
 	def SetIDdate(self, dateID):
 		self.dateID = dateID
@@ -121,7 +126,7 @@ class Problem(object):
 	def Traceback(self, node):
 		while not (node.state == []):
 			dif_components = set(node.state) - set(node.parent.state)
-			dif_costs = node.path_cost-node.parent.path_cost
+			dif_costs = node.path_cost-node.parent.path_cost - node.heuristic + node.parent.heuristic
 			if node.payload != 0:
 				self.decisions.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') 
 									+ ' ' + ' '.join(dif_components) + ' ' + str(dif_costs))
@@ -212,10 +217,10 @@ class Problem(object):
 	
 	def FPathCostHeur(self, node, parent):
 		f = self.FPathCost(node,parent)
-		node.heuristic = self.Heuristic(node)
+		node.heuristic = self.Heuristic1(node)
 		return (f + node.heuristic - parent.heuristic)
 	
-	def Heuristic(self, node):	
+	def Heuristic1(self, node):	
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
 		total_weight = 0
 		
@@ -229,6 +234,19 @@ class Problem(object):
 			return 0
 		return min(lista)
 
+	def Heuristic2(self,node):
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		total_weight = 0
+		
+		for state in left_states:
+			total_weight = total_weight + self.dict_comp[state].weight
+
+		ordered_costs = 	PriorityQueue() 
+
+		while total_weight > 0:
+
+
+			pass
 
 	def CheckRepeatedlStates(self, list1, list_lists):
 		for l in list_lists:
