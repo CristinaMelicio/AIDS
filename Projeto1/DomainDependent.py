@@ -286,6 +286,8 @@ class Problem(object):
 		for i in range(node.depth+1,len(self.dict_launch)):
 			weight_possible = weight_possible + self.dict_launch[i].max_payload
 
+		print(weight_missing,weight_possible)
+
 		if weight_missing < weight_possible:
 			return True
 		else:
