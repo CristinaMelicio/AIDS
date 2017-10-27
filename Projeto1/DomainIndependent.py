@@ -35,6 +35,7 @@ def GeneralSearch(problem, strategy):
 		if problem.GoalTest(node):
 			problem.Traceback(node)
 			problem.PrintDecisions()
+			problem.PrintEffectiveBF()
 			flag = False
 			
 		else :

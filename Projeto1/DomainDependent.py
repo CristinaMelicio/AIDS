@@ -53,6 +53,8 @@ class Problem(object):
 		self.dict_comp = {}
 		# dicionary of launches (ordered by date, key goes from 1 to number of launches)
 		self.dict_launch = {}
+		# number expanded nodes
+		self.n_expanded = 0
 		# number generated nodes
 		self.n_nodes = 0
 		# decisions to be made
@@ -147,28 +149,28 @@ class Problem(object):
 	def Successor(self, node):
 		# all nodes derived from the recursive expansion
 		new_nodes = []
-		
-		if self.CheckPossiblePayload(node) == True:
+		self.n_expanded = self.n_expanded + 1
+		#if self.CheckPossiblePayload(node) == True:
 			# not expand last node
-			if (node.depth + 1) in self.dict_launch:
-				# nodes generated in each recursive call of expansion
-				virtual_nodes = [node]
-				
-				while virtual_nodes:
-					virtual_nodes = self.Expand(virtual_nodes, node)
-					for virtual_node in virtual_nodes:
-						new_nodes.append(virtual_node)
-				
-				for new_node in new_nodes:
-					new_node.path_cost = self.func(new_node, node)
-				#add empty launch
+		if (node.depth + 1) in self.dict_launch:
+			# nodes generated in each recursive call of expansion
+			virtual_nodes = [node]
+			
+			while virtual_nodes:
+				virtual_nodes = self.Expand(virtual_nodes, node)
+				for virtual_node in virtual_nodes:
+					new_nodes.append(virtual_node)
+			
+			for new_node in new_nodes:
+				new_node.path_cost = self.func(new_node, node)
+			#add empty launch
 
-				null_node = Node(parent = node, state = node.state, 
-										path_cost = node.path_cost, 
-										depth = node.depth+1)
-				null_node.path_cost = self.func(null_node,node)-self.dict_launch[null_node.depth].fixed_cost
+			null_node = Node(parent = node, state = node.state, 
+									path_cost = node.path_cost, 
+									depth = node.depth+1)
+			null_node.path_cost = self.func(null_node,node)-self.dict_launch[null_node.depth].fixed_cost
 
-				new_nodes.append(null_node)
+			new_nodes.append(null_node)
 
 		return new_nodes
 
@@ -227,7 +229,7 @@ class Problem(object):
 	
 	def FPathCostHeur(self, node, parent):
 		f = self.FPathCost(node,parent)
-		node.heuristic = self.Heuristic1(node)
+		node.heuristic = self.Heuristic2(node)
 		#print(node)
 		return (f + node.heuristic - parent.heuristic)
 	
@@ -255,32 +257,30 @@ class Problem(object):
 		for state in left_states:
 			total_weight = total_weight + self.dict_comp[state].weight 
 		
-		lista = [self.dict_launch[x+1].cost_density*total_weight
+		if(total_weight !=0):
+			lista = [self.dict_launch[x+1].cost_density*total_weight
 					for x in range(node.depth,len(self.dict_launch))] 
 		#print(node.depth,lista,len(self.dict_launch))
-		if lista == []:
-			return 0
-		return min(lista)
+			if lista == []:
+				return 0
+			return min(lista)
+		return 0 
 
 
 	def Heuristic2(self,node):
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
 		total_weight = 0
 		heuristic = 0
-		#print(node)
 		
+
 		if node.depth+1 in self.dict_launch:
 			for state in left_states:
 				total_weight = total_weight + self.dict_comp[state].weight
 
-			lista = sorted([[self.dict_launch[x].cost_density,x] for x in range(node.depth,len(self.dict_launch))] , key=lambda t: t[0])
-			#print(lista)
-
+			lista = sorted([[self.dict_launch[x+1].cost_density,x+1] for x in range(node.depth,len(self.dict_launch))] , key=lambda t: t[0])
 		
 			while total_weight != 0:
-				for launch in lista:
-					# print(launch)
-					# print(self.dict_launch[launch[1]].max_payload)			
+				for launch in lista:			
 					if self.dict_launch[launch[1]].max_payload < total_weight :
 						total_weight = total_weight - self.dict_launch[launch[1]].max_payload;
 						heuristic = self.dict_launch[launch[1]].cost_density*self.dict_launch[launch[1]].max_payload;
@@ -288,9 +288,7 @@ class Problem(object):
 					else:
 						heuristic = heuristic + self.dict_launch[launch[1]].cost_density*total_weight
 						total_weight = 0
-						#print('h2',heuristic)
 						break
-		#print(heuristic)
 
 		return heuristic
 
@@ -318,6 +316,9 @@ class Problem(object):
 			return True
 		else:
 			return False
+
+	def PrintEffectiveBF(self):
+		print(self.n_nodes, self.n_expanded, self.n_nodes/self.n_expanded)
 
 
 class Node(object):
