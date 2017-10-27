@@ -147,7 +147,7 @@ class Problem(object):
 	def Successor(self, node):
 		# all nodes derived from the recursive expansion
 		new_nodes = []
-
+		
 		if self.CheckPossiblePayload(node) == True:
 			# not expand last node
 			if (node.depth + 1) in self.dict_launch:
@@ -162,12 +162,13 @@ class Problem(object):
 				for new_node in new_nodes:
 					new_node.path_cost = self.func(new_node, node)
 				#add empty launch
-				path_cost = node.path_cost
-				# if node.depth != 0:
-				# 	path_cost = path_cost-node.parent.heuristic
-				new_nodes.append(Node(parent = node, state = node.state, 
-										path_cost = path_cost, 
-										depth = node.depth+1))	
+
+				null_node = Node(parent = node, state = node.state, 
+										path_cost = node.path_cost, 
+										depth = node.depth+1)
+				null_node.path_cost = self.func(null_node,node)-self.dict_launch[null_node.depth].fixed_cost
+
+				new_nodes.append(null_node)
 
 		return new_nodes
 
@@ -219,7 +220,6 @@ class Problem(object):
 							path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight
 							new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
 															path_cost = path_cost, payload = payload))
-
 		return new_virtual_nodes			
 
 	def FPathCost(self, node, parent):
@@ -238,12 +238,15 @@ class Problem(object):
 		for state in left_states:
 			total_weight = total_weight + self.dict_comp[state].weight 
 		
-		lista = [self.dict_launch[x+1].fixed_cost + total_weight * self.dict_launch[x+1].var_cost
+		if(total_weight !=0):
+			lista = [self.dict_launch[x+1].fixed_cost + total_weight * self.dict_launch[x+1].var_cost
 					for x in range(node.depth,len(self.dict_launch))] 
 		
-		if lista == []:
-			return 0
-		return min(lista)
+			if lista == []:
+				return 0
+			return min(lista)
+
+		return 0
 
 	def Heuristic3(self,node):
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
@@ -334,7 +337,7 @@ class Node(object):
 		#
 
 	def __repr__(self):
-		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) +  "h = " + str(self.heuristic)
+		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) +  " h = " + str(self.heuristic)
 
 
 	def __lt__(self,other):
