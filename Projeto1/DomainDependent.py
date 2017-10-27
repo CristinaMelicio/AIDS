@@ -1,5 +1,25 @@
+from heapq import *
 import datetime
-import sys
+
+class HeapQueue(object):
+	
+	def __init__(self):
+		self.pq = []
+
+	def put(self, task):
+		#'Add a new task or update the priority of an existing task'
+		self.pq.append(task)
+		heapify(self.pq)
+
+	def remove(self,index):
+		#'Mark an existing task as REMOVED.  Raise KeyError if not found.'
+		del self.pq[index]
+		heapify(self.pq)
+		
+	def get(self):
+		#'Remove and return the lowest priority task. Raise KeyError if empty.'	
+		element = heappop(self.pq) 
+		return element
 
 class Component(object):
 
@@ -56,7 +76,7 @@ class Problem(object):
 		# number expanded nodes
 		self.n_expanded = 0
 		# number generated nodes
-		self.n_nodes = 0
+		self.nodes_generated = 0
 		# decisions to be made
 		self.decisions = []
 		# total cost
@@ -68,6 +88,7 @@ class Problem(object):
 			self.func = self.FPathCost
 		elif mode == '-i':
 			self.func = self.FPathCostHeur
+			
 
 		try:
 			file = open(file, "r")
@@ -163,14 +184,17 @@ class Problem(object):
 			
 			for new_node in new_nodes:
 				new_node.path_cost = self.func(new_node, node)
-			#add empty launch
+				self.nodes_generated = self.nodes_generated + 1
 
+			#add empty launch
 			null_node = Node(parent = node, state = node.state, 
 									path_cost = node.path_cost, 
 									depth = node.depth+1)
-			null_node.path_cost = self.func(null_node,node)-self.dict_launch[null_node.depth].fixed_cost
+			null_node.path_cost = self.func(null_node,node) - self.dict_launch[null_node.depth].fixed_cost
 
 			new_nodes.append(null_node)
+			self.nodes_generated = self.nodes_generated + 1
+
 
 		return new_nodes
 
@@ -229,8 +253,7 @@ class Problem(object):
 	
 	def FPathCostHeur(self, node, parent):
 		f = self.FPathCost(node,parent)
-		node.heuristic = self.Heuristic2(node)
-		#print(node)
+		node.heuristic = self.Heuristic3(node)
 		return (f + node.heuristic - parent.heuristic)
 	
 	def Heuristic1(self, node):	
@@ -249,23 +272,6 @@ class Problem(object):
 			return min(lista)
 
 		return 0
-
-	def Heuristic3(self,node):
-		left_states = set(self.dict_comp.keys()) - set(node.state)	
-		total_weight = 0
-		
-		for state in left_states:
-			total_weight = total_weight + self.dict_comp[state].weight 
-		
-		if(total_weight !=0):
-			lista = [self.dict_launch[x+1].cost_density*total_weight
-					for x in range(node.depth,len(self.dict_launch))] 
-		#print(node.depth,lista,len(self.dict_launch))
-			if lista == []:
-				return 0
-			return min(lista)
-		return 0 
-
 
 	def Heuristic2(self,node):
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
@@ -291,6 +297,22 @@ class Problem(object):
 						break
 
 		return heuristic
+
+	def Heuristic3(self,node):
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		total_weight = 0
+		
+		for state in left_states:
+			total_weight = total_weight + self.dict_comp[state].weight 
+		
+		if(total_weight !=0):
+			lista = [self.dict_launch[x+1].cost_density*total_weight
+					for x in range(node.depth,len(self.dict_launch))] 
+		#print(node.depth,lista,len(self.dict_launch))
+			if lista == []:
+				return 0
+			return min(lista)
+		return 0 
 
 
 	def CheckRepeatedlStates(self, list1, list_lists):
@@ -318,7 +340,7 @@ class Problem(object):
 			return False
 
 	def PrintEffectiveBF(self):
-		print(self.n_nodes, self.n_expanded, self.n_nodes/self.n_expanded)
+		print(self.nodes_generated, self.n_expanded, self.nodes_generated/self.n_expanded)
 
 
 class Node(object):
