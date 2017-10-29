@@ -1,4 +1,5 @@
 from heapq import *
+from math import exp, log1p
 import datetime
 
 class HeapQueue(object):
@@ -81,6 +82,8 @@ class Problem(object):
 		self.decisions = []
 		# total cost
 		self.final_cost = 0
+		# depth of solution
+		self.final_depth = 0
 		# initial state
 		self.initial_state = Node()		
 		
@@ -140,6 +143,7 @@ class Problem(object):
 	def GoalTest(self, node):
 		if set(node.state) == set(self.dict_comp.keys()):
 			self.final_cost = node.path_cost
+			self.final_depth = node.depth
 			return True
 		else:
 			return False
@@ -253,7 +257,7 @@ class Problem(object):
 	
 	def FPathCostHeur(self, node, parent):
 		f = self.FPathCost(node,parent)
-		node.heuristic = self.Heuristic3(node)
+		node.heuristic = self.Heuristic1(node)
 		return (f + node.heuristic - parent.heuristic)
 	
 	def Heuristic1(self, node):	
@@ -340,8 +344,9 @@ class Problem(object):
 			return False
 
 	def PrintEffectiveBF(self):
-		print(self.nodes_generated, self.n_expanded, self.nodes_generated/self.n_expanded)
-
+		print("N = " + str(self.nodes_generated))
+		print("d = " + str(self.final_depth))
+		print("b = " + str(exp(log1p(self.nodes_generated)/self.final_depth)))
 
 class Node(object):
 
