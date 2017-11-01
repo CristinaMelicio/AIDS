@@ -290,7 +290,7 @@ class Problem(object):
 	def EvaluationFunc(self, node, parent):
 		'Evaluation Function of current node f = g + h'
 		f = self.PathCostFunc(node,parent)
-		node.heuristic = self.Heuristic1(node)
+		node.heuristic = self.Heuristic4(node)
 		return (f + node.heuristic - parent.heuristic)
 	
 	def Heuristic1(self, node):
@@ -374,7 +374,7 @@ class Problem(object):
 						heuristic = self.dict_launch[launch[1]].cost_density*self.dict_launch[launch[1]].max_payload;
 					else:
 						extra_cost = [self.dict_launch[lista[j][1]].fixed_cost+self.dict_launch[lista[j][1]].var_cost*total_weight for j in range(i,len(lista))]
-						#extra_cost = [self.dict_launch[x[1]].fixed_cost+self.dict_launch[x[1]].var_cost*total_weight for j,x in enumerate(lista) if j>i]
+						print(self.dict_launch[launch[1]].cost_density*total_weight,min(extra_cost),extra_cost.index(min(extra_cost)),i)
 						heuristic = heuristic + min(extra_cost)
 						total_weight = 0
 						break
