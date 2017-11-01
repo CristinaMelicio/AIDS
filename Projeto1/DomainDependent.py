@@ -362,6 +362,32 @@ class Problem(object):
 		lista = [self.Heuristic1(node), self.Heuristic2(node), self.Heuristic3(node)]
 		return max(lista)
 
+	def Heuristic4(self,node):
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		total_weight = 0
+		heuristic = 0
+		
+		if node.depth+1 in self.dict_launch:
+			for state in left_states:
+				total_weight = total_weight + self.dict_comp[state].weight
+
+			lista = sorted([[self.dict_launch[x+1].cost_density,x+1] for x in range(node.depth,len(self.dict_launch))] , key=lambda t: t[0])
+		
+			while total_weight != 0:
+				for i in range(len(lista)):
+					launch = lista[i]			
+					if self.dict_launch[launch[1]].max_payload < total_weight :
+						total_weight = total_weight - self.dict_launch[launch[1]].max_payload;
+						heuristic = self.dict_launch[launch[1]].cost_density*self.dict_launch[launch[1]].max_payload;
+					else:
+						extra_cost = [self.dict_launch[lista[j][1]].fixed_cost+self.dict_launch[lista[j][1]].var_cost*total_weight for j in range(i,len(lista))]
+						#extra_cost = [self.dict_launch[x[1]].fixed_cost+self.dict_launch[x[1]].var_cost*total_weight for j,x in enumerate(lista) if j>i]
+						heuristic = heuristic + min(extra_cost)
+						total_weight = 0
+						break
+
+		return heuristic
+
 	def CheckRepeatedlStates(self, list1, list_lists):
 		'Check repeated list in a list of list'
 		for l in list_lists:
