@@ -2,29 +2,32 @@ from heapq import *
 from math import exp, log1p
 import datetime
 
+
 class HeapQueue(object):
 	
 	def __init__(self):
+		'Create the open List'
 		self.pq = []
 
 	def put(self, task):
-		#'Add a new task or update the priority of an existing task'
+		'Add a new task or update the priority of an existing task'
 		self.pq.append(task)
 		heapify(self.pq)
 
 	def remove(self,index):
-		#'Mark an existing task as REMOVED.  Raise KeyError if not found.'
+		'Remove a task form the priority queue given the index of the position'
 		del self.pq[index]
 		heapify(self.pq)
 		
 	def get(self):
-		#'Remove and return the lowest priority task. Raise KeyError if empty.'	
+		'Return the element with lowest priority task'
 		element = heappop(self.pq) 
 		return element
 
 class Component(object):
 
 	def __init__(self, vID = None, weight = 0):
+		'Create a Component with ID name, weight and a list of adjacence'
 		self.vID = vID 
 		self.weight = weight
 		self.list_adj = []
@@ -41,6 +44,8 @@ class Component(object):
 class Launch(object):
 	
 	def __init__(self, dateID = None, max_payload = 0, fixed_cost = 0, var_cost = 0):
+		'Create a Launch w/ the send date, maximum payload, fixed cost and the variable cost'
+		'To help in the heuristics the cost density'
 		self.dateID = dateID
 		self.max_payload = max_payload
 		self.fixed_cost = fixed_cost
@@ -68,6 +73,8 @@ class Launch(object):
 class Problem(object):
 
 	def __init__(self, file, mode = None):
+		'Create a problem formulation from a text file'
+		
 		# mode uniformed / informed
 		self.mode = mode	
 		# dictionary of components
@@ -87,19 +94,27 @@ class Problem(object):
 		# initial state
 		self.initial_state = Node()		
 		
+		# choose function to calculate the cost
+		# uninformed search only consider the path cost
 		if mode == '-u':
-			self.func = self.FPathCost
+			self.func = self.PathCostFunc
+		# informed search consider the path cost plus the heuristic
+		# evaluation function
 		elif mode == '-i':
-			self.func = self.FPathCostHeur
+			self.func = self.EvaluationFunc
 			
-
+		# open the txt file	
 		try:
 			file = open(file, "r")
 		except IOError:
 			print ("ERROR: There is not such a file")
 			exit()
 
+		# reading each line searching for V, E and L
 		for line in file:
+			# "V" correspond to a component with a weigth
+			# if that component is already at the component dictionary we only add the weigth
+			# if not we create a new key
 			if line[0] == 'V':
 				line = line.strip('\n')
 				comp_id = line.split(None, 1)[0]
@@ -108,6 +123,13 @@ class Problem(object):
 					self.dict_comp[comp_id].SetWeight(comp_w)
 				except:
 					self.dict_comp[comp_id] = Component(comp_id, comp_w)
+
+			# "E" correspond to a edge therefore the list of adjacency of a component is extracted
+			# if the first component is already a key of the component dictionary, the second componet is added 
+			# to the adjacent list
+			# if it is not we create a new key with the first and put the second in the adjacency list 
+			# we also see if the second component is a key and add the first component to the adjacency list
+			# if not it is added
 			elif line[0] == 'E':
 				line = line.strip('\n')	
 				comp_id1 = line.split()[1]
@@ -122,6 +144,11 @@ class Problem(object):
 				except:
 					self.dict_comp[comp_id2] = Component(comp_id2)
 					self.dict_comp[comp_id2].SetAdjacents(comp_id1)
+
+			# "L" correspond to a launch therefore we create a launch object per each line 
+			# and put it in the launch dictionary than we sort it in chronological order
+			# the date is the key
+
 			elif line[0] == 'L':
 				line = line.strip('\n')
 				date_id = datetime.datetime.strptime(line.split()[1], '%d%m%Y').date()
@@ -139,7 +166,8 @@ class Problem(object):
 		self.dict_launch = dict_aux	
 
 		
-	# checks if all elements are in space
+	# checks if all elements are already in space
+	# saves the final cost and depth of the goal solution
 	def GoalTest(self, node):
 		if set(node.state) == set(self.dict_comp.keys()):
 			self.final_cost = node.path_cost
@@ -148,7 +176,8 @@ class Problem(object):
 		else:
 			return False
 
-	# traces all decisions made until the initial node
+	# traces all decisions in each node made until the initial node
+	# don't save the empty launches
 	def Traceback(self, node):
 		while not (node.state == []):
 			dif_components = set(node.state) - set(node.parent.state)
@@ -162,7 +191,7 @@ class Problem(object):
 	def PrintDecisions(self):
 		for i in range(len(self.decisions)):
 			print(self.decisions[-(i+1)])
-		print(self.final_cost)
+		print(round(self.final_cost,6))
 
 		# s = ""
 		# for i in range(len(self.decisions)):
@@ -252,11 +281,11 @@ class Problem(object):
 															path_cost = path_cost, payload = payload))
 		return new_virtual_nodes			
 
-	def FPathCost(self, node, parent):
+	def PathCostFunc(self, node, parent):
 		return node.path_cost + self.dict_launch[node.depth].fixed_cost
 	
-	def FPathCostHeur(self, node, parent):
-		f = self.FPathCost(node,parent)
+	def EvaluationFunc(self, node, parent):
+		f = self.PathCostFunc(node,parent)
 		node.heuristic = self.Heuristic1(node)
 		return (f + node.heuristic - parent.heuristic)
 	
