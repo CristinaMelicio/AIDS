@@ -318,7 +318,6 @@ class Problem(object):
 			return min(lista)
 		return 0 
 
-
 	def CheckRepeatedlStates(self, list1, list_lists):
 		for l in list_lists:
 			if set(list1) == set(l):
