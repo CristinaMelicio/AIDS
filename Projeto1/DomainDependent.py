@@ -374,7 +374,7 @@ class Problem(object):
 						heuristic = self.dict_launch[launch[1]].cost_density*self.dict_launch[launch[1]].max_payload;
 					else:
 						extra_cost = [self.dict_launch[lista[j][1]].fixed_cost+self.dict_launch[lista[j][1]].var_cost*total_weight for j in range(i,len(lista))]
-						print(self.dict_launch[launch[1]].cost_density*total_weight,min(extra_cost),extra_cost.index(min(extra_cost)),i)
+						#print(self.dict_launch[launch[1]].cost_density*total_weight,min(extra_cost),extra_cost.index(min(extra_cost)),i)
 						heuristic = heuristic + min(extra_cost)
 						total_weight = 0
 						break
