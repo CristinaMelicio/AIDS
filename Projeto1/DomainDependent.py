@@ -185,7 +185,7 @@ class Problem(object):
 		
 		while not (node.state == []):
 			dif_components = set(node.state) - set(node.parent.state)
-			dif_costs = node.path_cost-node.parent.path_cost - node.heuristic + node.parent.heuristic
+			dif_costs = round(node.path_cost-node.parent.path_cost - node.heuristic + node.parent.heuristic,6)
 			
 			#don t save the empty launches
 			if node.payload != 0:
@@ -290,7 +290,7 @@ class Problem(object):
 	def EvaluationFunc(self, node, parent):
 		'Evaluation Function of current node f = g + h'
 		f = self.PathCostFunc(node,parent)
-		node.heuristic = self.Heuristic1(node)
+		node.heuristic = self.Heuristic3(node)
 		return (f + node.heuristic - parent.heuristic)
 	
 	def Heuristic1(self, node):
@@ -315,6 +315,7 @@ class Problem(object):
 		return 0
 
 	def Heuristic2(self,node):
+		'Heuristic 2 it is based in heuristic 1 but considers the cost density of the launches'
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
 		total_weight = 0
 		
@@ -332,6 +333,7 @@ class Problem(object):
 		return 0 
 
 	def Heuristic3(self,node):
+		'Heuristic 3'
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
 		total_weight = 0
 		heuristic = 0
@@ -340,7 +342,9 @@ class Problem(object):
 			for state in left_states:
 				total_weight = total_weight + self.dict_comp[state].weight
 
-			lista = sorted([[self.dict_launch[x+1].cost_density,x+1] for x in range(node.depth,len(self.dict_launch))] , key=lambda t: t[0])
+			lista = sorted([[self.dict_launch[x+1].cost_density,x+1] 
+							for x in range(node.depth,len(self.dict_launch))],
+							key = lambda t: t[0])
 		
 			while total_weight != 0:
 				for launch in lista:			
@@ -354,14 +358,19 @@ class Problem(object):
 
 		return heuristic
 
+	def Heuristic5(self, node):
+		lista = [self.Heuristic1(node), self.Heuristic2(node), self.Heuristic3(node)]
+		return max(lista)
 
 	def CheckRepeatedlStates(self, list1, list_lists):
+		'Check repeated list in a list of list'
 		for l in list_lists:
 			if set(list1) == set(l):
 				return True 
 		return False
 
 	def CheckPossiblePayload(self,node):
+		'Check if there is enough payload in the left launches '
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
 		weight_missing = 0
 		weight_possible = 0
