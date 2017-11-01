@@ -3,6 +3,7 @@ def GeneralSearch(problem, strategy):
 
 	strategy.put(problem.initial_state)
 	flag = True
+	closelist = list()
 
 	while flag:
 		node = strategy.get()
