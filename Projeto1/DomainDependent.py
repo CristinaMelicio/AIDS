@@ -28,6 +28,7 @@ class Component(object):
 
 	def __init__(self, vID = None, weight = 0):
 		'Create a Component with ID name, weight and a list of adjacence'
+	
 		self.vID = vID 
 		self.weight = weight
 		self.list_adj = []
@@ -45,11 +46,13 @@ class Launch(object):
 	
 	def __init__(self, dateID = None, max_payload = 0, fixed_cost = 0, var_cost = 0):
 		'Create a Launch w/ the send date, maximum payload, fixed cost and the variable cost'
-		'To help in the heuristics the cost density'
+
 		self.dateID = dateID
 		self.max_payload = max_payload
 		self.fixed_cost = fixed_cost
 		self.var_cost = var_cost
+		
+		# to help in the heuristics the cost density
 		if(max_payload != 0):
 			self.cost_density = (fixed_cost+var_cost*max_payload)/max_payload
 		else:
@@ -72,9 +75,10 @@ class Launch(object):
 
 class Problem(object):
 
+	
 	def __init__(self, file, mode = None):
-		'Create a problem formulation from a text file'
-		
+		'Create a problem formulation from a text file'	
+
 		# mode uniformed / informed
 		self.mode = mode	
 		# dictionary of components
@@ -112,6 +116,7 @@ class Problem(object):
 
 		# reading each line searching for V, E and L
 		for line in file:
+			
 			# "V" correspond to a component with a weigth
 			# if that component is already at the component dictionary we only add the weigth
 			# if not we create a new key
@@ -148,7 +153,6 @@ class Problem(object):
 			# "L" correspond to a launch therefore we create a launch object per each line 
 			# and put it in the launch dictionary than we sort it in chronological order
 			# the date is the key
-
 			elif line[0] == 'L':
 				line = line.strip('\n')
 				date_id = datetime.datetime.strptime(line.split()[1], '%d%m%Y').date()
@@ -165,10 +169,10 @@ class Problem(object):
 			dict_aux[i+1] = list(list_aux[i])[1]	
 		self.dict_launch = dict_aux	
 
-		
-	# checks if all elements are already in space
-	# saves the final cost and depth of the goal solution
 	def GoalTest(self, node):
+		'Checks if all elements are already in space'
+	
+		# saves the final cost and depth of the goal solution
 		if set(node.state) == set(self.dict_comp.keys()):
 			self.final_cost = node.path_cost
 			self.final_depth = node.depth
@@ -176,83 +180,79 @@ class Problem(object):
 		else:
 			return False
 
-	# traces all decisions in each node made until the initial node
-	# don't save the empty launches
 	def Traceback(self, node):
+		'Traces all the decisions made from the goal state until the initial node'
+		
 		while not (node.state == []):
 			dif_components = set(node.state) - set(node.parent.state)
 			dif_costs = node.path_cost-node.parent.path_cost - node.heuristic + node.parent.heuristic
+			
+			#don t save the empty launches
 			if node.payload != 0:
 				self.decisions.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') 
 									+ ' ' + ' '.join(dif_components) + ' ' + str(dif_costs))
 			node = node.parent
 
-	# Print All Decisions from the initial state to goal state
 	def PrintDecisions(self):
+		'Print the decisions from the traceback function since initial state until the goal state'
+		
 		for i in range(len(self.decisions)):
 			print(self.decisions[-(i+1)])
 		print(round(self.final_cost,6))
 
-		# s = ""
-		# for i in range(len(self.decisions)):
-		# 	s += str(self.decisions[-(i+1)]) + "\n"
-		# s += ("%.6f")%self.final_cost
-		# return s
-
-	# SucessorFunction
 	def Successor(self, node):
+		'Sucessor Function '
+	
 		# all nodes derived from the recursive expansion
 		new_nodes = []
 		self.n_expanded = self.n_expanded + 1
-		#if self.CheckPossiblePayload(node) == True:
+
+		# only expand if theres is enough payload available in the next launches
+		if self.CheckPossiblePayload(node) == True:
 			# not expand last node
-		if (node.depth + 1) in self.dict_launch:
-			# nodes generated in each recursive call of expansion
-			virtual_nodes = [node]
-			
-			while virtual_nodes:
-				virtual_nodes = self.Expand(virtual_nodes, node)
-				for virtual_node in virtual_nodes:
-					new_nodes.append(virtual_node)
-			
-			for new_node in new_nodes:
-				new_node.path_cost = self.func(new_node, node)
+			if (node.depth + 1) in self.dict_launch:
+				# nodes generated in each recursive call of expansion
+				virtual_nodes = [node]
+				while virtual_nodes:
+					virtual_nodes = self.Expand(virtual_nodes, node)
+					for virtual_node in virtual_nodes:
+						new_nodes.append(virtual_node)
+				# for each node expanded update the cost function
+				for new_node in new_nodes:
+					new_node.path_cost = self.func(new_node, node)
+					self.nodes_generated = self.nodes_generated + 1
+
+				# add empty launch it means same state from node before
+				null_node = Node(parent = node, state = node.state, 
+										path_cost = node.path_cost, 
+										depth = node.depth+1)
+				null_node.path_cost = self.func(null_node,node) - self.dict_launch[null_node.depth].fixed_cost
+
+				new_nodes.append(null_node)
 				self.nodes_generated = self.nodes_generated + 1
-
-			#add empty launch
-			null_node = Node(parent = node, state = node.state, 
-									path_cost = node.path_cost, 
-									depth = node.depth+1)
-			null_node.path_cost = self.func(null_node,node) - self.dict_launch[null_node.depth].fixed_cost
-
-			new_nodes.append(null_node)
-			self.nodes_generated = self.nodes_generated + 1
-
 
 		return new_nodes
 
 	def Expand(self, nodes, parent):
-		# auxiliary to store already generated states (used for comparsion)
+		'Auxiliary function to expand nodes'
+		
+		# auxiliary list to store already generated states (used for comparsion)
 		virtual_states = []
 		# stores all new nodes
 		new_virtual_nodes = []
 
-
-		# Case of one empty node case
+		# case of one empty node case
 		if nodes[0].state == []:
-			#print('case []')
 			node = nodes[0]
 			for component in self.dict_comp:
 				if self.dict_comp[component].weight <= self.dict_launch[node.depth + 1].max_payload:
 					state = [component]
-					#path_cost = self.func(node) 
 					path_cost = node.path_cost + self.dict_launch[node.depth+1].var_cost * self.dict_comp[component].weight
 					new_virtual_nodes.append(Node(parent = node, state = state, depth = node.depth + 1, 
 													path_cost = path_cost, payload = self.dict_comp[component].weight))
 
-		# other case loop trough all received nodes
+		# other case loop through all received nodes
 		else:
-			
 			for node in nodes:
 				possible_components = []
 				# collect neighbours of every component in space
@@ -270,26 +270,51 @@ class Problem(object):
 					if not self.CheckRepeatedlStates(possible_state, virtual_states):
 						# add state to list of current reached states
 						virtual_states.append(possible_state)
+						
 						# if node is the parent payload we dont had past payload
 						if node == parent:
 							payload = self.dict_comp[component].weight
 						else:
 							payload = self.dict_comp[component].weight + node.payload
-						if (payload <= self.dict_launch[parent.depth + 1].max_payload):
+						
+						if payload <= self.dict_launch[parent.depth + 1].max_payload:
 							path_cost = node.path_cost + self.dict_launch[parent.depth+1].var_cost * self.dict_comp[component].weight
 							new_virtual_nodes.append(Node(parent = parent, state = possible_state, depth = parent.depth+1, 
 															path_cost = path_cost, payload = payload))
 		return new_virtual_nodes			
 
 	def PathCostFunc(self, node, parent):
+		'Function that calculates path cost'
 		return node.path_cost + self.dict_launch[node.depth].fixed_cost
 	
 	def EvaluationFunc(self, node, parent):
+		'Evaluation Function of current node f = g + h'
 		f = self.PathCostFunc(node,parent)
 		node.heuristic = self.Heuristic1(node)
 		return (f + node.heuristic - parent.heuristic)
 	
-	def Heuristic1(self, node):	
+	def Heuristic1(self, node):
+		'Heuristic 1'	
+
+		# left components missing in space
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		total_weight = 0
+		
+		# total weight from left components
+		for state in left_states:
+			total_weight = total_weight + self.dict_comp[state].weight 
+		
+		# list of costs considering total weight for every left launch 
+		if total_weight !=0:
+			lista = [self.dict_launch[x+1].fixed_cost + total_weight * self.dict_launch[x+1].var_cost
+					for x in range(node.depth,len(self.dict_launch))] 
+			if lista == []:
+				return 0
+			# heuristic chooses the min of the cost 
+			return min(lista)
+		return 0
+
+	def Heuristic2(self,node):
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
 		total_weight = 0
 		
@@ -297,21 +322,20 @@ class Problem(object):
 			total_weight = total_weight + self.dict_comp[state].weight 
 		
 		if(total_weight !=0):
-			lista = [self.dict_launch[x+1].fixed_cost + total_weight * self.dict_launch[x+1].var_cost
+			lista = [self.dict_launch[x+1].cost_density*total_weight
 					for x in range(node.depth,len(self.dict_launch))] 
 		
 			if lista == []:
 				return 0
 			return min(lista)
 
-		return 0
+		return 0 
 
-	def Heuristic2(self,node):
+	def Heuristic3(self,node):
 		left_states = set(self.dict_comp.keys()) - set(node.state)	
 		total_weight = 0
 		heuristic = 0
 		
-
 		if node.depth+1 in self.dict_launch:
 			for state in left_states:
 				total_weight = total_weight + self.dict_comp[state].weight
@@ -323,29 +347,12 @@ class Problem(object):
 					if self.dict_launch[launch[1]].max_payload < total_weight :
 						total_weight = total_weight - self.dict_launch[launch[1]].max_payload;
 						heuristic = self.dict_launch[launch[1]].cost_density*self.dict_launch[launch[1]].max_payload;
-						#print('h1',heuristic)
 					else:
 						heuristic = heuristic + self.dict_launch[launch[1]].cost_density*total_weight
 						total_weight = 0
 						break
 
 		return heuristic
-
-	def Heuristic3(self,node):
-		left_states = set(self.dict_comp.keys()) - set(node.state)	
-		total_weight = 0
-		
-		for state in left_states:
-			total_weight = total_weight + self.dict_comp[state].weight 
-		
-		if(total_weight !=0):
-			lista = [self.dict_launch[x+1].cost_density*total_weight
-					for x in range(node.depth,len(self.dict_launch))] 
-		#print(node.depth,lista,len(self.dict_launch))
-			if lista == []:
-				return 0
-			return min(lista)
-		return 0 
 
 
 	def CheckRepeatedlStates(self, list1, list_lists):
