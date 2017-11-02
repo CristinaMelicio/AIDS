@@ -407,8 +407,6 @@ class Problem(object):
 		for i in range(node.depth,len(self.dict_launch)):
 			weight_possible = weight_possible + self.dict_launch[i+1].max_payload
 
-		#print(weight_missing,weight_possible)
-
 		if weight_missing <= weight_possible:
 			return True
 		else:
@@ -431,9 +429,8 @@ class Node(object):
 		self.depth = depth
 		# payload in this launch
 		self.payload = payload
-		# 
+		# value of heuristic
 		self.heuristic = 0
-		#
 
 	def __repr__(self):
 		return " state = " + str(self.state) + " path_cost = " + str(self.path_cost) + ' d = ' + str(self.depth) +  " h = " + str(self.heuristic)
