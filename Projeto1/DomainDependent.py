@@ -290,7 +290,7 @@ class Problem(object):
 	def EvaluationFunc(self, node, parent):
 		'Evaluation Function of current node f = g + h'
 		f = self.PathCostFunc(node,parent)
-		node.heuristic = self.Heuristic1(node)
+		node.heuristic = self.Heuristic5(node)
 		return (f + node.heuristic - parent.heuristic)
 	
 	def Heuristic1(self, node):
@@ -415,7 +415,8 @@ class Problem(object):
 			return False
 
 	def PrintEffectiveBF(self):
-		print("N = " + str(self.nodes_generated))
+		print("Ngen = " + str(self.nodes_generated))
+		print("Nexp = " + str(self.n_expanded))
 		print("d = " + str(self.final_depth))
 		print("b = " + str(exp(log1p(self.nodes_generated)/self.final_depth)))
 
