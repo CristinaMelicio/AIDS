@@ -1,14 +1,22 @@
 
 def GeneralSearch(problem, strategy):
 
-	strategy.put(problem.initial_state)
-	flag = True
 	closelist = list()
+	strategy.put(problem.initial_state)
+	
+
+
+	flag = True
+
 
 	while flag:
+
+			
 		node = strategy.get()
+
 		if problem.GoalTest(node):
 			problem.Traceback(node)
+
 			problem.PrintDecisions()
 			problem.PrintEffectiveBF()
 			flag = False
@@ -20,7 +28,11 @@ def GeneralSearch(problem, strategy):
 					i = strategy.pq.index(new_node)
 					if strategy.pq[i].path_cost > new_node.path_cost:
 						strategy.remove(i)
-						strategy.put(new_node)
+						try:
+							closelist.index(new_node)
+						except:
+							strategy.put(new_node)
+
 				except ValueError:
 					strategy.put(new_node)	
 			
