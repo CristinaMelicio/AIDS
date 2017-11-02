@@ -1,7 +1,7 @@
 
 def GeneralSearch(problem, strategy):
 
-	closelist = list()
+	closedlist = list()
 	strategy.put(problem.initial_state)
 	
 
@@ -10,16 +10,18 @@ def GeneralSearch(problem, strategy):
 
 
 	while flag:
-
 			
-		node = strategy.get()
+		try:
+			node = strategy.get()
+			closelist.append(node)
+		except:
+			return str("FAILURE")
 
 		if problem.GoalTest(node):
 			problem.Traceback(node)
-
-			problem.PrintDecisions()
 			problem.PrintEffectiveBF()
 			flag = False
+			return problem.solution
 			
 		else:
 			new_nodes = problem.Successor(node)
@@ -29,7 +31,7 @@ def GeneralSearch(problem, strategy):
 					if strategy.pq[i].path_cost > new_node.path_cost:
 						strategy.remove(i)
 						try:
-							closelist.index(new_node)
+							closedlist.index(new_node)
 						except:
 							strategy.put(new_node)
 
