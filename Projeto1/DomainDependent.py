@@ -387,7 +387,7 @@ class Problem(object):
 		return heuristic
 
 	def Heuristic5(self, node):
-		lista = [self.Heuristic1(node), self.Heuristic2(node), self.Heuristic3(node)]
+		lista = [self.Heuristic1(node), self.Heuristic3(node)]
 		return max(lista)
 
 	def CheckRepeatedlStates(self, list1, list_lists):
