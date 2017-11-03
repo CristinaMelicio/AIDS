@@ -90,7 +90,7 @@ class Problem(object):
 		# number generated nodes
 		self.nodes_generated = 0
 		# decisions to be made
-		self.decisions = []
+		self.solution = []
 		# total cost
 		self.final_cost = 0
 		# depth of solution
@@ -189,15 +189,17 @@ class Problem(object):
 			
 			#don t save the empty launches
 			if node.payload != 0:
-				self.decisions.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') 
+				self.solution.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') 
 									+ ' ' + ' '.join(dif_components) + ' ' + str(dif_costs))
 			node = node.parent
+
+		self.solution.append(round(self.final_cost,6))
 
 	def PrintDecisions(self):
 		'Print the decisions from the traceback function since initial state until the goal state'
 		
-		for i in range(len(self.decisions)):
-			print(self.decisions[-(i+1)])
+		for i in range(len(self.solution)):
+			print(self.solution[-(i+1)])
 		print(round(self.final_cost,6))
 
 	def Successor(self, node):
@@ -290,7 +292,7 @@ class Problem(object):
 	def EvaluationFunc(self, node, parent):
 		'Evaluation Function of current node f = g + h'
 		f = self.PathCostFunc(node,parent)
-		node.heuristic = self.Heuristic1(node)
+		node.heuristic = self.Heuristic5(node)
 		return (f + node.heuristic - parent.heuristic)
 	
 	def Heuristic1(self, node):
@@ -413,7 +415,8 @@ class Problem(object):
 			return False
 
 	def PrintEffectiveBF(self):
-		print("N = " + str(self.nodes_generated))
+		print("Ngen = " + str(self.nodes_generated))
+		print("Nexp = " + str(self.n_expanded))
 		print("d = " + str(self.final_depth))
 		print("b = " + str(exp(log1p(self.nodes_generated)/self.final_depth)))
 

@@ -17,8 +17,12 @@ def main(argv):
 
 	#frontier = 	PriorityQueue()
 	frontier = HeapQueue()
-	GeneralSearch(problem,frontier)
-	
+	solution = GeneralSearch(problem,frontier)
+	if solution == "FAILURE":
+		print(solution)
+	else :
+		for decision in solution:
+			print(decision)
 	
 	#return(GeneralSearch(problem,frontier))
 	
