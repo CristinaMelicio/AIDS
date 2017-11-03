@@ -163,6 +163,7 @@ class Problem(object):
 
 		file.close()
 		
+		# sort of launch dictionay
 		list_aux = sorted(self.dict_launch.items(), key=lambda t: t[0])		
 		dict_aux = {}
 		for i in range(len(list_aux)):
@@ -183,16 +184,19 @@ class Problem(object):
 	def Traceback(self, node):
 		'Traces all the decisions made from the goal state until the initial node'
 		
+		# list to store decisions
+		d = []
 		while not (node.state == []):
 			dif_components = set(node.state) - set(node.parent.state)
 			dif_costs = round(node.path_cost-node.parent.path_cost - node.heuristic + node.parent.heuristic,6)
 			
 			#don t save the empty launches
 			if node.payload != 0:
-				self.solution.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') 
+				d.append(self.dict_launch[node.depth].dateID.strftime('%d%m%Y') 
 									+ ' ' + ' '.join(dif_components) + ' ' + str(dif_costs))
 			node = node.parent
-
+		
+		self.solution = list(reversed(d))	
 		self.solution.append(round(self.final_cost,6))
 
 	def PrintDecisions(self):
@@ -292,7 +296,7 @@ class Problem(object):
 	def EvaluationFunc(self, node, parent):
 		'Evaluation Function of current node f = g + h'
 		f = self.PathCostFunc(node,parent)
-		node.heuristic = self.Heuristic5(node)
+		node.heuristic = self.Heuristic3(node)
 		return (f + node.heuristic - parent.heuristic)
 
 	def Heuristic0(self,node):
