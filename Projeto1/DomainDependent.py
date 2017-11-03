@@ -294,6 +294,24 @@ class Problem(object):
 		f = self.PathCostFunc(node,parent)
 		node.heuristic = self.Heuristic5(node)
 		return (f + node.heuristic - parent.heuristic)
+
+	def Heuristic0(self,node):
+		left_states = set(self.dict_comp.keys()) - set(node.state)	
+		total_weight = 0
+
+		# total weight from left components
+		for state in left_states:
+			total_weight = total_weight + self.dict_comp[state].weight 
+
+		if total_weight !=0:
+			fixed_cost = [self.dict_launch[x+1].fixed_cost for x in range(node.depth,len(self.dict_launch))] 
+			var_cost = [self.dict_launch[x+1].var_cost for x in range(node.depth,len(self.dict_launch))] 
+			if fixed_cost == []:
+				return 0
+			# heuristic chooses the min of the cost 
+			return min(fixed_cost) + min(var_cost)*total_weight
+
+		return 0
 	
 	def Heuristic1(self, node):
 		'Heuristic 1'	
@@ -387,7 +405,7 @@ class Problem(object):
 		return heuristic
 
 	def Heuristic5(self, node):
-		lista = [self.Heuristic1(node), self.Heuristic3(node)]
+		lista = [self.Heuristic0(node), self.Heuristic3(node)]
 		return max(lista)
 
 	def CheckRepeatedlStates(self, list1, list_lists):
