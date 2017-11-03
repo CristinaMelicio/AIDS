@@ -3,20 +3,18 @@ def GeneralSearch(problem, strategy):
 
 	closedlist = list()
 	strategy.put(problem.initial_state)
-	
 
-
-	flag = True
-
-
-	while flag:
-			
+	while True:
+		
+		# get node from frontier	
 		try:
 			node = strategy.get()
-			closedlist.append(node)
+			closedlist.append(node)			
+		# if frontier empty return failure
 		except:
 			return str("FAILURE")
 
+		# check if goal state
 		if problem.GoalTest(node):
 			problem.Traceback(node)
 			problem.PrintEffectiveBF()
