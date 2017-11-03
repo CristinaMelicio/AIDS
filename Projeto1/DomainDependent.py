@@ -296,7 +296,7 @@ class Problem(object):
 	def EvaluationFunc(self, node, parent):
 		'Evaluation Function of current node f = g + h'
 		f = self.PathCostFunc(node,parent)
-		node.heuristic = self.Heuristic3(node)
+		node.heuristic = self.Heuristic5(node)
 		return (f + node.heuristic - parent.heuristic)
 
 	def Heuristic0(self,node):
