@@ -1,28 +1,5 @@
-from heapq import *
 from math import exp, log1p
 import datetime
-
-
-class HeapQueue(object):
-	
-	def __init__(self):
-		'Create the open List'
-		self.pq = []
-
-	def put(self, task):
-		'Add a new task or update the priority of an existing task'
-		self.pq.append(task)
-		heapify(self.pq)
-
-	def remove(self,index):
-		'Remove a task form the priority queue given the index of the position'
-		del self.pq[index]
-		heapify(self.pq)
-		
-	def get(self):
-		'Return the element with lowest priority task'
-		element = heappop(self.pq) 
-		return element
 
 class Component(object):
 
@@ -75,7 +52,6 @@ class Launch(object):
 
 class Problem(object):
 
-	
 	def __init__(self, file, mode = None):
 		'Create a problem formulation from a text file'	
 

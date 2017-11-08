@@ -24,7 +24,7 @@ def main(argv):
 if __name__ == "__main__":
 	start_time = time.clock()
 	main(sys.argv)
-	print("--- %s seconds ---" % (time.clock() - start_time))
+	# print("--- %s seconds ---" % (time.clock() - start_time))
 
 	
 
