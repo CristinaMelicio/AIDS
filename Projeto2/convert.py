@@ -124,7 +124,6 @@ def Implication(sentence1,sentence2):
 	#print('Implication: ', arg1, arg2)
 	return Sentence(('=>', arg1, arg2))
 
-
 def CNFConvert(sentence):
 
 	#print('---------------------CNF :',sentence)
@@ -247,14 +246,25 @@ class Clause(object):
 			if not(symbol in self.symbols):
 				if symbol.IsNegation():
 					for symbol2 in list_symbols:
-						if symbol2.Negate().GetSentence() == symbol:
+						if (symbol2.args[0] == symbol.args[0]) and (symbol2 != symbol):
 							self.symbols = True
 							break
 					if self.symbols == True:
 						break
 					else:
-						self.symbols.append(symbol)
+						self.symbols.append(str(symbol.GetSentence()))
+					#self.symbols.append(symbol)
 				elif not(symbol.Negate() in list_symbols):
-					self.symbols.append(str(symbol))
+					self.symbols.append(str(symbol.GetSentence()))
 		print(self.symbols)
 
+	def Contains(self,clause):
+		#print(self.symbols,clause.symbols)
+		for symbol in clause.symbols :
+			if not(symbol in self.symbols):
+				#print('s', symbol)
+				return False
+		return True
+
+	def __repr__(self):
+		return str(self.symbols)
