@@ -55,6 +55,12 @@ class Clause(object):
 		else:
 			return False
 
+	def Contains(self,literal):
+		for i in range(self.size):
+			if self.literals[i] == literal:
+				return True
+		return False
+
 	def __repr__(self):
 		if self.literals == True:
 			return str(True)
@@ -144,7 +150,20 @@ def RemoveImpliedClauses(KB):
 	print(checked_clauses)
 	return [KB[i] for i in range(KB_len) if not(implied_clauses[i])]
 
+def Simplify(KB):
 
+	KB_len = len(KB)
+	removed_flag = True
+	remove_clauses = [False for i in range(KB_len)]
+	while removed_flag:
+		for i in range(KB_len):
+			for literal in KB[i]:
+				for j in range(KB_len):
+					if i!=j:
+						if IsNegation(literal):
+						if KB[j].contains(literal)
+
+		
 
 def main(argv):
 
