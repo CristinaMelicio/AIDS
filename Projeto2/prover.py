@@ -56,6 +56,23 @@ class Clause(object):
 		else:
 			return False
 
+	def Contains(self,literal):
+		for i in range(self.size):
+			if self.literals[i] == literal:
+				return True
+		# if literal in self.literals:
+		# 	return True
+		return False
+
+	def ContainsComplementary(self,literal):
+		if IsNegation(literal):
+			if literal[1] in self.literals:
+				return True
+		else:
+			if ('not', literal) in self.literals:
+				return True
+
+
 	def __repr__(self):
 		if self.literals == True:
 			return str(True)
@@ -79,7 +96,7 @@ def IsNegationOf(sentence1, sentence2):
 		if sentence1[1] == sentence2[0]:
 			return True
 	elif IsNegation(sentence2):
-		if sentence2[1] == sentence1[0]:
+		if sentence2[1] == sentence1[0]:	
 			return True
 	return False		
 
@@ -155,6 +172,51 @@ def RemoveImpliedClauses(KB):
 	#print(checked_clauses)
 	return [KB[i] for i in range(KB_len) if not(implied_clauses[i])]
 
+
+
+def Simplify(KB):
+
+	KB_len = len(KB)
+	KB_new = list(KB)
+	removed_flag = True
+	remove_clauses = [False for i in range(KB_len)]
+	checked_clauses = [False for i in range(KB_len)]
+	complentary_found = False
+
+	# do while a clause has been removed
+	while removed_flag:
+		removed_flag = False
+		# loop on all clauses
+		for i in range(KB_len):
+			# only do thing if current clause is not to be removed
+			if not(remove_clauses[i]):
+				checked_clauses[i] = True
+				# loop in all literals of clause
+				for literal in KB_new[i].literals:
+					# loop in all other clauses that have not yet been marked to removed
+					for j in range(KB_len):
+						if i!=j and not(remove_clauses[j]):
+							# if clause with complementary found, stop checking
+							if KB_new[j].ContainsComplementary(literal):
+								complentary_found = True
+								break
+					# if no complementary found, mark clause to be removed
+					if not(complentary_found):
+						remove_clauses[i] = True
+						removed_flag = True
+						break
+					complentary_found = False
+		print([KB[i] for i in range(KB_len) if not(remove_clauses[i])])
+
+	return [KB[i] for i in range(KB_len) if not(remove_clauses[i])]
+
+
+# def PL_Resolve(ci, cj):
+# 	for i in ci:
+# 		for j in cj:
+# 			if IsNegation(i)
+
+
 def PL_Resolve(ci, cj):
 	new_clauses = []
 	print('--------------------------------')
@@ -169,7 +231,6 @@ def PL_Resolve(ci, cj):
 					new_clauses.append(new_clause)
 
 	return new_clauses
-
 
 
 def PL_Resolution(KB):
@@ -222,7 +283,6 @@ def PL_Resolution(KB):
 		clauses = new + clauses
 		clauses = RemoveImpliedClauses(clauses)
 
-
 def main(argv):
 
 	# get problem from stdin and convert each sentence
@@ -241,6 +301,14 @@ def main(argv):
 	for clause in KB:
 		print(clause)
 
+	KB = Simplify(KB)
+	print('--------------------------------')
+	print('-- Simplify')
+	if KB == None:
+		print('True')
+	else:
+		for clause in KB:
+			print(clause)	
 
 	PL_Resolution(KB)
 		
@@ -248,3 +316,4 @@ def main(argv):
 if __name__ == "__main__":
 	#start_time = time.clock()
 	main(sys.argv)
+
