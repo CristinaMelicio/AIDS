@@ -79,7 +79,7 @@ def IsNegationOf(sentence1, sentence2):
 		if sentence1[1] == sentence2[0]:
 			return True
 	elif IsNegation(sentence2):
-		if sentence2[1] == sentence1[0]	
+		if sentence2[1] == sentence1[0]:
 			return True
 	return False		
 
@@ -136,14 +136,14 @@ def RemoveImpliedClauses(KB):
 			possible_sizes.append(size)
 
 	possible_sizes = sorted(possible_sizes)
-	print(size_clauses)
-	print(possible_sizes)
+	#print(size_clauses)
+	#print(possible_sizes)
 	i = 0
 	for size in possible_sizes:
-		print(str('Size : ') + str(size))
+		#print(str('Size : ') + str(size))
 		for i in range(KB_len):
 			if size_clauses[i] == size and not(implied_clauses[i]) and not(checked_clauses[i]):
-				print(KB[i])
+				#print(KB[i])
 				checked_clauses[i] = True
 				for j in range(KB_len):
 					if i!=j and not(implied_clauses[j]) and not(checked_clauses[j]):
@@ -151,33 +151,76 @@ def RemoveImpliedClauses(KB):
 							implied_clauses[j] = True
 							#print(KB[j])
 
-	print(implied_clauses)
-	print(checked_clauses)
+	#print(implied_clauses)
+	#print(checked_clauses)
 	return [KB[i] for i in range(KB_len) if not(implied_clauses[i])]
 
 def PL_Resolve(ci, cj):
-	for i in ci:
-		for j in cj:
-			if IsNegation(i)
+	new_clauses = []
+	print('--------------------------------')
+	print('-- PL_Resolve')
+
+	for i in ci.literals:
+		for j in cj.literals:
+			if IsNegationOf(i,j):
+				new_clause = Clause([ci.literals[k] for k in range(ci.size) if k!=i] + [cj.literals for k in range(cj.size) if k!=j])
+				print(new_clause)
+				if not new_clause.IsTautology():
+					new_clauses.append(new_clause)
+
+	return new_clauses
 
 
 
+def PL_Resolution(KB):
+	
+	print('--------------------------------')
+	print('-- PL_Resolution')
+
+	clauses = list(KB)
+	while(True):
+		new = list()
+		for clause in combinations(clauses,2):
+			resolvents = PL_Resolve(clause[0],clause[1])
+			# Check if there are any empty clause
+			for resolvent in resolvents:
+				if resolvent == []:
+					return True
+			new = new + resolvents;
+		
+		# i=0
+		# flag = False
+		if all(any(all(x in clause.literals for x in n.literals) for clause in clauses) for n in new):			
+			print("contido")
+			return False
 
 
-# def PL_Resolution(KB, a):
-# 	clauses = list(KB)
-# 	new = list()
-# 	for clause in combinations(clauses,2):
-# 		resolvents = [resolvents, PLResolution(clause[0],clause[1])]
-# 		if resolvents is empty
-# 			return True
-# 		new = [new, resolvents]
+		# for ci in new:
+		# 	for cj in clauses:
+		# 		if v	if clause1.size > clause2.size:
+# 		return False
+# 	else:
+# 		for literal1 in clause1.literals:
+# 			literal_found = False
+# 			for literal2 in clause2.literals:
+# 				if IsSameLiteral(literal2,literal1):
+# 					literal_found = True
+# 					break
+# 			if not(literal_found):
+# 				return False				
+# 		return True
+# :
+		# 			flag = True
+		# 			i = i+1
+		# 			break
+		# 	if not flag:
+		# 		break
+		# 	flag = False
+		# if i == len(ci):
+		# 	return False
 
-# 		if new 
-
-
-
-
+		clauses = new + clauses
+		clauses = RemoveImpliedClauses(clauses)
 
 
 def main(argv):
@@ -198,6 +241,8 @@ def main(argv):
 	for clause in KB:
 		print(clause)
 
+
+	PL_Resolution(KB)
 		
 
 if __name__ == "__main__":

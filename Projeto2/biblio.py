@@ -161,7 +161,7 @@ def CNFConvert(sentence):
 		#print('ATO: ', sentence)
 		return sentence
 
-	elif sentence.IsNegation() :
+	elif sentence.IsNegation():
 		#print( 'NOT :' , sentence )
 		sentence2 = sentence.Parse()
 		#print('s2 :' , sentence2)
