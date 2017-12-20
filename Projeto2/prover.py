@@ -1,5 +1,6 @@
 import sys
 from convert import *
+from itertools import combinations
 
 class Clause(object):
 	"""Clause represents a sentence that only contains disjuctions
@@ -78,6 +79,16 @@ def IsNegation(sentence):
 	else:
 		return False
 
+
+def IsNegationOf(sentence1, sentence2):
+	if IsNegation(sentence1):
+		if sentence1[1] == sentence2[0]:
+			return True
+	elif IsNegation(sentence2):
+		if sentence2[1] == sentence1[0]	
+			return True
+	return False		
+
 def IsSameLiteral(l1,l2):
 	if IsNegation(l1):
 		if IsNegation(l2):
@@ -150,6 +161,7 @@ def RemoveImpliedClauses(KB):
 	print(checked_clauses)
 	return [KB[i] for i in range(KB_len) if not(implied_clauses[i])]
 
+
 def Simplify(KB):
 
 	KB_len = len(KB)
@@ -162,6 +174,27 @@ def Simplify(KB):
 					if i!=j:
 						if IsNegation(literal):
 						if KB[j].contains(literal)
+
+def PL_Resolve(ci, cj):
+	for i in ci:
+		for j in cj:
+			if IsNegation(i)
+
+
+
+
+
+# def PL_Resolution(KB, a):
+# 	clauses = list(KB)
+# 	new = list()
+# 	for clause in combinations(clauses,2):
+# 		resolvents = [resolvents, PLResolution(clause[0],clause[1])]
+# 		if resolvents is empty
+# 			return True
+# 		new = [new, resolvents]
+
+# 		if new 
+
 
 		
 
@@ -178,8 +211,12 @@ def main(argv):
 
 	# now remove clauses implied by others
 	KB = RemoveImpliedClauses(KB)
+	print('--------------------------------')
+	print('-- RemoveImpliedClausese')
 	for clause in KB:
 		print(clause)
+
+		
 
 if __name__ == "__main__":
 	#start_time = time.clock()
