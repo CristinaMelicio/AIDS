@@ -251,8 +251,8 @@ def PL_Resolution(KB):
 	print('-- PL_Resolution')
 
 	clauses = list(KB)
-	#while(True):
-	for n in range (4):
+	while(True):
+	#for n in range (4):
 		new = list()
 		for clause in combinations(clauses,2):
 			resolvents = PL_Resolve(clause[0],clause[1])
@@ -294,6 +294,8 @@ def main(argv):
 	KB = Simplify(KB)
 	print('--------------------------------')
 	print('-- Simplify')
+	if KB == []:
+		print('empty')
 	for clause in KB:
 		print(clause)
 
