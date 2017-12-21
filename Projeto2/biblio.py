@@ -1,5 +1,9 @@
 connectors = ['not','and','or','=>','<=>']
 
+# ------------------------------------------------------------
+# This part is relevant to work with sentences not yet converted to 
+# CNF format
+
 def IsSentenceValid(sentence):
 	""" Check if sentence is valid, still needs to be improved"""
 
@@ -28,7 +32,6 @@ def IsSentenceValid(sentence):
 
 	#if sentence has more than 3 elements or less than one it is not valid
 	return False
-
 
 class Sentence(object):
 	"""This class represents a logic sentence with the following elements
@@ -151,96 +154,45 @@ def Implication(sentence1,sentence2):
 	#print('Implication: ', arg1, arg2)
 	return Sentence(('=>', arg1, arg2))
 
+# ------------------------------------------------------------
+# This part is relevant to sentences which where already converted
+# to CNF and for this reason can now be represented as conjuctions
+# of clauses. Which will make it easier to factorize, remove tautologies
+# remove clauses implied by others and afterwards apply resolution
+# algorithms
 
 
-def CNFConvert(sentence):
-	""" Converts sentence to CNF, does not any simplification rule """
+def IsNegation(literal):
+	""" Check if literal is negation """
 
-	#print('---------------------CNF :',sentence)
-	if sentence.IsAtom():
-		#print('ATO: ', sentence)
-		return sentence
+	if literal[0] == 'not':
+		return True
+	else:
+		return False
 
-	elif sentence.IsNegation():
-		#print( 'NOT :' , sentence )
-		sentence2 = sentence.Parse()
-		#print('s2 :' , sentence2)
-		if sentence2.IsAtom():
-			#print( 'NOT/ATOM' )
-			return sentence
-		# double negation
-		elif sentence2.IsNegation():
-			#print( 'NOT/2NEG' )
-			sentence2 = sentence2.Parse()
-			return CNFConvert(sentence2)
-		# de Morgan's Law
-		elif sentence2.IsConjunction():
-			#print( 'NOT/CONJ' )
-			sentence1,sentence2 = sentence2.Parse()
-			return CNFConvert(Disjunction(sentence1.Negate(),sentence2.Negate()))
-		# de Morgan's Law
-		elif sentence2.IsDisjunction():
-			#print( 'NOT/DISJ' )
-			sentence1,sentence2 = sentence2.Parse()
-			return CNFConvert(Conjunction(sentence1.Negate(),sentence2.Negate()))
-		else:
-			#print( 'NOT/ELSE' )
-			return CNFConvert(CNFConvert(sentence2).Negate())
+def Complementary(literal1, literal2):
+	""" Check if one literal is negation of the other """
 
-	elif sentence.IsConjunction():
-		#print( 'CON :' , sentence )
-		sentence1,sentence2 = sentence.Parse()
-		sentence1 = CNFConvert(sentence1)
-		sentence2 = CNFConvert(sentence2)
-		#print( 'CON again:', sentence, sentence1, sentence2 )
-		return Conjunction(sentence1,sentence2)
-
-	elif sentence.IsDisjunction():
-		#print( 'DIS :' , sentence )
-		sentence1,sentence2 = sentence.Parse()
-		sentence1 = CNFConvert(sentence1)
-		sentence2 = CNFConvert(sentence2)
-		#print( 'DIS again:', sentence, sentence1, sentence2 )
-		if not(sentence1.IsConjunction()) and not(sentence2.IsConjunction()):
-			return Disjunction(sentence1,sentence2)
-		else:
-			if sentence1.IsConjunction():
-				#print('IsCon s1')
-				sentence11, sentence12 = sentence1.Parse()
-				return CNFConvert(Conjunction(Disjunction(sentence11,sentence2),Disjunction(sentence12,sentence2)))
-			elif sentence2.IsConjunction():
-				#print('IsCon s2')
-				sentence21, sentence22 = sentence2.Parse()
-				return CNFConvert(Conjunction(Disjunction(sentence21,sentence1),Disjunction(sentence22,sentence1)))
-
-	elif sentence.IsImplication():
-		#print( 'IMP :' , sentence )
-		sentence1,sentence2 = sentence.Parse()
-		return CNFConvert(Disjunction(sentence1.Negate(),sentence2))
-
-	elif sentence.IsBiconditional():
-		#print( 'BIC :' , sentence )
-		sentence1,sentence2 = sentence.Parse()
-		#print('s1,s2 :', sentence1,sentence2)
-		sentence11 = Implication(sentence1,sentence2)
-		sentence12 = Implication(sentence2,sentence1)
-		#print('s11,s12 :', sentence11, sentence12)
-		return CNFConvert(Conjunction(sentence11,sentence12))
-		#return CNFConvert(Conjunction(Implication(sentence1,sentence2),Implication(sentence2,sentence1)))
-
+	if IsNegation(literal1):
+		if literal1[1] == literal2[0]:
+			return True
+	elif IsNegation(literal2):
+		if literal2[1] == literal1[0]:	
+			return True
+	return False
 
 class Clause(object):
 	"""Clause represents a sentence that only contains disjuctions
 	of literals. Because of this propertie we can represent it only as 
-	a list of atomic sentences and negations. This representation
+	a list of atomic sentences and negations of literals. This representation
 	makes it easier to afterwards simplify the sentences by
 	removing repetitions, tautologies, etc...
-	literals : list of literals that make the sentence"""
+	literals : list of literals that make the sentence, if tautology literals
+			   is set to True"""
 
-	def __init__(self, sentence):
-		# parse sentence in all its elements
-		#print(sentence)
-		list_literals = ParseConjunction(sentence)
+	def __init__(self, list_literals):
+		#print('Initialize Clause')
+		#print(list_literals)
 		self.literals = []
 		self.size = 0
 
@@ -251,21 +203,21 @@ class Clause(object):
 			# in clause, if this happens clause is set to True
 			# otherwise add literal to clause
 			repeated_flag = False
-			if literal.IsNegation():
+			if IsNegation(literal):
 				for literal2 in self.literals:
-					if literal.args[0] == literal2.args[0]:
-						if literal2.IsNegation():
-							repeated_flag = True
-						else:
-							self.literals = True	
+					if IsNegation(literal2) and literal2[1] == literal[1]:
+						repeated_flag = True
+						break
+					elif literal[1] == literal2[0]:
+						self.literals = True	
 						break
 			else:
 				for literal2 in self.literals:
-					if literal.args[0] == literal2.args[0]:
-						if literal2.IsNegation():
-							self.literals = True
-						else:
-							repeated_flag = True
+					if IsNegation(literal2) and literal2[1] == literal[0]:
+						self.literals = True
+						break
+					elif literal[0] == literal2[0]:
+						repeated_flag = True
 						break
 
 			if self.literals == True:
@@ -273,29 +225,84 @@ class Clause(object):
 
 			elif not(repeated_flag):
 				self.literals.append(literal)
-				self.size += 1
+			
+		if self.literals != True:
+			self.size = len(self.literals)
 
 		#print(self.literals)
 
-	def Contains(self,clause):
-		#print(self.literals,clause.literals)
-		if self.size > clause.size:
+		
+	def IsTautology(self):
+		if self.literals == True:
+			return True
+		else:
 			return False
 
-		for literal in clause.literals :
-			if not(literal in self.literals):
-				#print('s', literal)
+	def Contains(self,literal):
+		for i in range(self.size):
+			if self.literals[i] == literal:
+				return True
+		# if literal in self.literals:
+		# 	return True
+		return False
+
+	def ContainsComplementary(self,literal):
+		if IsNegation(literal):
+			if literal[1] in self.literals:
+				return True
+		else:
+			if ('not', literal) in self.literals:
+				return True
+
+
+	def __eq__(self, foo):
+		if set(self.literals) == set(foo.literals):
+			return True
+		else:
+			return False
+
+	def __contains__(self, foo):
+		if self.size > foo.size:
+			return False
+		else:
+			if all(x in self.literals for x in foo.literals):
+				return True
+			else:
 				return False
-		return True
 
 	def __repr__(self):
 		if self.literals == True:
 			return str(True)
-		elif len(self.literals) == 1: 
-			return str(self.literals[0])
+		elif self.size == 1:
+			if IsNegation(self.literals[0]):
+				return str(self.literals[0])
+			else:
+				return str('\'') + str(self.literals[0]) + str('\'') 
 		else:
 			return str(self.literals)
 
+def Implies(clause1,clause2):
+	""" Tests if clause1 implies clause2"""	
+	# if clause1 in clause2:
+	# 	return True
+	# else:
+	# 	return False
+	if clause1.size > clause2.size:
+		return False
+	else:
+		if all(x in clause2.literals for x in clause1.literals):
+			return True
+		else:
+			return False
+		# for literal1 in clause1.literals:
+		# 	literal_found = False
+		# 	for literal2 in clause2.literals:
+		# 		if IsSameLiteral(literal2,literal1):
+		# 			literal_found = True
+		# 			break
+		# 	if not(literal_found):
+		# 		return False				
+		# return True
 
 def ClauseConvert(CNFsentence):
 	""" Convert CNF sentence to a list of clauses """
@@ -311,8 +318,32 @@ def ClauseConvert(CNFsentence):
 			sentence_list.append(sentence1)
 			sentence_list.append(sentence2)
 		else :
-			clause_list.append(Clause(sentence))
+			list_literals = ParseDisjunction(sentence)
+			clause_list.append(Clause(list_literals))
 	return clause_list	
+
+def ParseDisjunction(sentence):
+	""" Useful for clause representation, parses disjuction 
+	in all its elements which are now only atomic sentences
+	or negation of literals, returns list with those elements"""
+
+	to_sparse = [sentence]
+	literals = []
+	while to_sparse:
+		sentence1 = to_sparse.pop()
+		if sentence1.IsAtom():
+			literals.append(sentence1.GetSentence())
+		elif sentence1.IsNegation():
+			sentence2 = sentence1.Parse()
+			if sentence2.IsAtom():
+				literals.append(sentence1.GetSentence())
+			else:
+				to_sparse.append(sentence2)
+		else :
+			sentence1,sentence2 = sentence1.Parse()
+			to_sparse.append(sentence1)
+			to_sparse.append(sentence2)
+	return literals	
 
 def OutputConvert(CNFsentence):
 
@@ -327,36 +358,36 @@ def OutputConvert(CNFsentence):
 			sentence_list.append(sentence1)
 			sentence_list.append(sentence2)
 		else :
-			list_literals = ParseConjunction(sentence)
+			list_literals = ParseDisjunction(sentence)
 			clause_list.append(list_literals)
 	return clause_list	
 
+def RemoveRepeatedClauses(KB):
+	pass
 
-def ParseConjunction(sentence):
-	""" Useful for clause representation, parses conjuction 
-	in all its elements which are now only atomic sentences
-	or negations, returns list with those elements"""
+def RemoveImpliedClauses(KB):
+	""" returns a new set of clauses from where all
+	clauses implied by others were removed (includes removal 
+	equal clauses) """
 
-	#print('ParseConjunction :', sentence)
-	to_sparse = [sentence]
-	literals = []
-	while to_sparse:
-		sentence1 = to_sparse.pop()
-		#print( 's :', sentence1)
-		if sentence1.IsAtom():
-			#print('isA')
-			literals.append(sentence1)
-		elif sentence1.IsNegation():
-			#print('isN')
-			sentence2 = sentence1.Parse()
-			if sentence2.IsAtom():
-				literals.append(sentence1)
-			else:
-				to_sparse.append(sentence2)
-		else :
-			sentence1,sentence2 = sentence1.Parse()
-			#print(sentence1, sentence2)
-			to_sparse.append(sentence1)
-			to_sparse.append(sentence2)
-	return literals
+	KB_len = len(KB)
+	implied_clauses = [False for i in range(KB_len)]
+	checked_clauses = [False for i in range(KB_len)]
+	size_clauses = [KB[i].size for i in range(KB_len)]
+	possible_sizes = []
+	for size in size_clauses: 
+		if not(size in possible_sizes):
+			possible_sizes.append(size)
 
+	possible_sizes = sorted(possible_sizes)
+	i = 0
+	for size in possible_sizes:
+		for i in range(KB_len):
+			if size_clauses[i] == size and not(implied_clauses[i]) and not(checked_clauses[i]):
+				checked_clauses[i] = True
+				for j in range(KB_len):
+					if i!=j and not(implied_clauses[j]) and not(checked_clauses[j]):
+						if Implies(KB[i],KB[j]):
+							implied_clauses[j] = True
+
+	return [KB[i] for i in range(KB_len) if not(implied_clauses[i])]
