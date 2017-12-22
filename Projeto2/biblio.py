@@ -265,7 +265,7 @@ class Clause(object):
 		if self.size > foo.size:
 			return False
 		else:
-			if all(x in self.literals for x in foo.literals):
+			if all(x in foo.literals for x in self.literals):
 				return True
 			else:
 				return False
@@ -280,29 +280,6 @@ class Clause(object):
 				return str('\'') + str(self.literals[0]) + str('\'') 
 		else:
 			return str(self.literals)
-
-def Implies(clause1,clause2):
-	""" Tests if clause1 implies clause2"""	
-	# if clause1 in clause2:
-	# 	return True
-	# else:
-	# 	return False
-	if clause1.size > clause2.size:
-		return False
-	else:
-		if all(x in clause2.literals for x in clause1.literals):
-			return True
-		else:
-			return False
-		# for literal1 in clause1.literals:
-		# 	literal_found = False
-		# 	for literal2 in clause2.literals:
-		# 		if IsSameLiteral(literal2,literal1):
-		# 			literal_found = True
-		# 			break
-		# 	if not(literal_found):
-		# 		return False				
-		# return True
 
 def ClauseConvert(CNFsentence):
 	""" Convert CNF sentence to a list of clauses """
@@ -345,25 +322,28 @@ def ParseDisjunction(sentence):
 			to_sparse.append(sentence2)
 	return literals	
 
-def OutputConvert(CNFsentence):
-
-	sentence_list = [CNFsentence]
-	clause_list = []
-	
-	# loop until all conjunctions are eliminated 
-	while sentence_list:
-		sentence = sentence_list.pop()
-		if sentence.IsConjunction():
-			sentence1,sentence2 = sentence.Parse()
-			sentence_list.append(sentence1)
-			sentence_list.append(sentence2)
-		else :
-			list_literals = ParseDisjunction(sentence)
-			clause_list.append(list_literals)
-	return clause_list	
-
 def RemoveRepeatedClauses(KB):
-	pass
+	""" removes repeated clauses from set of clauses"""
+	KB_len = len(KB)
+	implied_clauses = [False for i in range(KB_len)]
+	checked_clauses = [False for i in range(KB_len)]
+	size_clauses = [KB[i].size for i in range(KB_len)]
+	possible_sizes = []
+	for size in size_clauses: 
+		if not(size in possible_sizes):
+			possible_sizes.append(size)
+
+	possible_sizes = sorted(possible_sizes)
+	i = 0
+	for size in possible_sizes:
+		for i in range(KB_len):
+			if size_clauses[i] == size and not(implied_clauses[i]) and not(checked_clauses[i]):
+				checked_clauses[i] = True
+				for j in range(KB_len):
+					if i!=j and not(implied_clauses[j]) and not(checked_clauses[j]) and KB[j] == KB[i]:
+						implied_clauses[j] = True
+
+	return [KB[i] for i in range(KB_len) if not(implied_clauses[i])]
 
 def RemoveImpliedClauses(KB):
 	""" returns a new set of clauses from where all
@@ -387,7 +367,8 @@ def RemoveImpliedClauses(KB):
 				checked_clauses[i] = True
 				for j in range(KB_len):
 					if i!=j and not(implied_clauses[j]) and not(checked_clauses[j]):
-						if Implies(KB[i],KB[j]):
+						# check if KB[j] is implied by KB[i]
+						if KB[j] in KB[i]:
 							implied_clauses[j] = True
 
 	return [KB[i] for i in range(KB_len) if not(implied_clauses[i])]
