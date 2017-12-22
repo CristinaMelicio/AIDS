@@ -29,15 +29,15 @@ def main(argv):
 				clause_list.append(clause)
 				#print(clause)
 
-
-	#print('-----------------------------------------')
-	#for clause in clause_list:
-		#print(clause)
-
-	clause_list = RemoveImpliedClauses(clause_list)
+	clause_list = RemoveRepeatedClauses(clause_list)
 	#print('-----------------------------------------')
 	for clause in clause_list:
 		print(clause)
+
+	# clause_list = RemoveImpliedClauses(clause_list)
+	# print('-----------------------------------------')
+	# for clause in clause_list:
+	# 	print(clause)
 
 
 def CNFConvert(sentence):
@@ -54,15 +54,16 @@ def CNFConvert(sentence):
 		elif sentence2.IsNegation():
 			sentence2 = sentence2.Parse()
 			return CNFConvert(sentence2)
-		# de Morgan's Law
+		# De Morgan's Law
 		elif sentence2.IsConjunction():
 			sentence1,sentence2 = sentence2.Parse()
 			return CNFConvert(Disjunction(sentence1.Negate(),sentence2.Negate()))
-		# de Morgan's Law
+		# De Morgan's Law
 		elif sentence2.IsDisjunction():
 			sentence1,sentence2 = sentence2.Parse()
 			return CNFConvert(Conjunction(sentence1.Negate(),sentence2.Negate()))
-		# when argument is implication or biconditional
+		# when argument is implication or biconditional remove them first and 
+		# only afterwards negate and try to convert once again
 		else:
 			return CNFConvert(CNFConvert(sentence2).Negate())
 
@@ -70,7 +71,9 @@ def CNFConvert(sentence):
 		sentence1,sentence2 = sentence.Parse()
 		sentence1 = CNFConvert(sentence1)
 		sentence2 = CNFConvert(sentence2)
-		
+		# because of the recursivity of CNFConvert
+		# when it reaches this point we are sure sentence1 and sentence2
+		# are in CNF format, so we can just do the conjunction of both
 		return Conjunction(sentence1,sentence2)
 
 	elif sentence.IsDisjunction():
@@ -79,7 +82,7 @@ def CNFConvert(sentence):
 		sentence2 = CNFConvert(sentence2)
 		# because of the recursivity of CNFConvert
 		# if sentence1 and 2 are not conjuctions they can only be
-		# disjunctions, atomic sentences or negations of atomic sentences
+		# disjunctions or literals
 		# and in this scenario (sentence1 or sentence2) is already CNF format
 		if not(sentence1.IsConjunction()) and not(sentence2.IsConjunction()):
 			return Disjunction(sentence1,sentence2)
@@ -94,12 +97,14 @@ def CNFConvert(sentence):
 
 	elif sentence.IsImplication():
 		sentence1,sentence2 = sentence.Parse()
+		# remove implication
 		return CNFConvert(Disjunction(sentence1.Negate(),sentence2))
 
 	elif sentence.IsBiconditional():
 		sentence1,sentence2 = sentence.Parse()
 		sentence11 = Implication(sentence1,sentence2)
 		sentence12 = Implication(sentence2,sentence1)
+		# remove biconditional
 		return CNFConvert(Conjunction(sentence11,sentence12))
 
 if __name__ == "__main__":
