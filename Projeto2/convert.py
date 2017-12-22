@@ -70,6 +70,7 @@ def CNFConvert(sentence):
 		sentence1,sentence2 = sentence.Parse()
 		sentence1 = CNFConvert(sentence1)
 		sentence2 = CNFConvert(sentence2)
+		
 		return Conjunction(sentence1,sentence2)
 
 	elif sentence.IsDisjunction():
