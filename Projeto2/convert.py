@@ -3,6 +3,7 @@ from biblio import *
 
 def main(argv):
 	clause_list = []
+	i = 0
 	for line in sys.stdin:
 		a = eval(line)
 		#print('-----------------------------------------------')
@@ -25,11 +26,14 @@ def main(argv):
 		#print('-- Remove Tautologies and factorize')
 		clauses = ClauseConvert(cnf_s)
 		for clause in clauses:
+			i = i+1
 			if not(clause.IsTautology()):
 				clause_list.append(clause)
 				#print(clause)
 
-	clause_list = RemoveRepeatedClauses(clause_list)
+	#print('Number Clauses Created: ', i)
+	#print('Not Tautologies', len(clause_list))
+	#clause_list = RemoveRepeatedClauses(clause_list)
 	#print('-----------------------------------------')
 	for clause in clause_list:
 		print(clause)

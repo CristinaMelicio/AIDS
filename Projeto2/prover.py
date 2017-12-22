@@ -1,6 +1,9 @@
 import sys
 from biblio import *
 from itertools import combinations
+import time
+
+bbb = 0
 
 def Simplify(KB):
 
@@ -42,7 +45,8 @@ def Simplify(KB):
 
 def PL_Resolve(ci, cj):
 	new_clauses = list()
-	
+	global bbb
+	bbb = bbb + 1
 	# print('--------------------------------')
 	# print('-- PL_Resolve')
 
@@ -69,8 +73,8 @@ def PL_Resolve(ci, cj):
 
 def PL_Resolution(KB):
 	
-	print('--------------------------------')
-	print('-- PL_Resolution')
+	#print('--------------------------------')
+	#print('-- PL_Resolution')
 
 	clauses = list(KB)
 	while(True):
@@ -88,7 +92,13 @@ def PL_Resolution(KB):
 			new = new + resolvents;			
 		
 		aux = clauses + new
+		# print('....................')
+		# for clause in aux:
+		#  	print(clause)
 		aux = RemoveImpliedClauses(aux)
+		# print('--------------------')
+		# for clause in aux:
+		#  	print(clause)
 
 		if all(n in clauses for n in aux):
 			print("False")
@@ -106,8 +116,8 @@ def PL_Resolution(KB):
 		if clauses == []:
 			return False
 		# for clause in clauses:
-		# 	print(clause)
-		print(len(clauses))
+		#  	print(clause)
+		#print(len(clauses))
 		#print (clauses)
 
 def PL_Resolution_Unit_Rule(KB):
@@ -149,7 +159,7 @@ def PL_Resolution_Unit_Rule(KB):
 		if clauses == []:
 			return False
 		#print(clauses)
-		print(len(clauses))
+		#print(len(clauses))
 
 def PL_Resolution_Unit_Boost(KB):
 	pass
@@ -170,6 +180,7 @@ def main(argv):
 			KB.append(Clause([a]))
 		else:
 			KB.append(Clause(a))
+			#print(Clause(a))
 
 	# because nothing can be always obtained from nothing....
 	if len(KB) == 0:
@@ -219,9 +230,9 @@ def main(argv):
 		print('True')
 	else:
 		print('False')	
-
+	#print(bbb)
 
 if __name__ == "__main__":
-	#start_time = time.clock()
+	start_time = time.clock()
 	main(sys.argv)
-
+	print(time.clock()-start_time)

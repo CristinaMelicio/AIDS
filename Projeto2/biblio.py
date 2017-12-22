@@ -1,5 +1,5 @@
 connectors = ['not','and','or','=>','<=>']
-
+import sys
 # ------------------------------------------------------------
 # This part is relevant to work with sentences not yet converted to 
 # CNF format
@@ -53,7 +53,8 @@ class Sentence(object):
 				self.args = sentence[1:]
 			##print( 'a' , self.connector, self.args )
 		else:
-			sys.exit('invalide sentence' , sentence)
+			print(sentence)
+			sys.exit('invalide sentence')
 
 	# check if sentence is atomic
 	def IsAtom(self):
@@ -174,10 +175,10 @@ def Complementary(literal1, literal2):
 	""" Check if one literal is negation of the other """
 
 	if IsNegation(literal1):
-		if literal1[1] == literal2[0]:
+		if literal1[1] == literal2:
 			return True
 	elif IsNegation(literal2):
-		if literal2[1] == literal1[0]:	
+		if literal2[1] == literal1:	
 			return True
 	return False
 
@@ -195,28 +196,32 @@ class Clause(object):
 		#print(list_literals)
 		self.literals = []
 		self.size = 0
-
+		#print(list_literals)
 		# create clause using simplification rules
 		for literal in list_literals:
+			#print(literal)
 			# will not add repeated literals to clause
 			# and verifies if complementary already exists
 			# in clause, if this happens clause is set to True
 			# otherwise add literal to clause
 			repeated_flag = False
 			if IsNegation(literal):
+				#print('N')
 				for literal2 in self.literals:
 					if IsNegation(literal2) and literal2[1] == literal[1]:
 						repeated_flag = True
 						break
-					elif literal[1] == literal2[0]:
+					elif literal[1] == literal2:
 						self.literals = True	
 						break
 			else:
 				for literal2 in self.literals:
-					if IsNegation(literal2) and literal2[1] == literal[0]:
+					#print('P')
+					if IsNegation(literal2) and literal2[1] == literal:
 						self.literals = True
 						break
-					elif literal[0] == literal2[0]:
+					elif literal == literal2:
+						#print('Rep')
 						repeated_flag = True
 						break
 
@@ -237,14 +242,6 @@ class Clause(object):
 			return True
 		else:
 			return False
-
-	def Contains(self,literal):
-		for i in range(self.size):
-			if self.literals[i] == literal:
-				return True
-		# if literal in self.literals:
-		# 	return True
-		return False
 
 	def ContainsComplementary(self,literal):
 		if IsNegation(literal):
