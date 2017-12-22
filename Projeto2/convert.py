@@ -3,46 +3,17 @@ from biblio import *
 
 def main(argv):
 	clause_list = []
-	i = 0
+
 	for line in sys.stdin:
 		a = eval(line)
-		#print('-----------------------------------------------')
-		#print('-- Sentence to convert')
-		#print(a)
 		s = Sentence(a)
-		##print(s.IsAtom(), s.IsNegation(), s.IsConjunction(), s.IsDisjunction(), s.IsImplication(), s.IsBiconditional())
 		cnf_s = CNFConvert(s)
-		#print('-----------------------------------------------')
-		#print('-- CNF Conversion Result')
-		#print(cnf_s)
-		#clauses = OutputConvert(cnf_s)
-		#print('-----------------------------------------------')
-		#print('-- Resultant Clauses')
-		#for clause in clauses:
-			# only add clauses that are not always True
-			#print(clause)
-
-		#print('-----------------------------------------------')
-		#print('-- Remove Tautologies and factorize')
 		clauses = ClauseConvert(cnf_s)
 		for clause in clauses:
-			i = i+1
 			if not(clause.IsTautology()):
 				clause_list.append(clause)
-				#print(clause)
-
-	#print('Number Clauses Created: ', i)
-	#print('Not Tautologies', len(clause_list))
-	#clause_list = RemoveRepeatedClauses(clause_list)
-	#print('-----------------------------------------')
 	for clause in clause_list:
 		print(clause)
-
-	# clause_list = RemoveImpliedClauses(clause_list)
-	# print('-----------------------------------------')
-	# for clause in clause_list:
-	# 	print(clause)
-
 
 def CNFConvert(sentence):
 	""" Converts recursively sentences to CNF, does not apply simplification rules """
@@ -112,5 +83,4 @@ def CNFConvert(sentence):
 		return CNFConvert(Conjunction(sentence11,sentence12))
 
 if __name__ == "__main__":
-	#start_time = time.clock()
 	main(sys.argv)

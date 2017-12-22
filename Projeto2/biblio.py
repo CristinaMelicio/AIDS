@@ -43,17 +43,13 @@ class Sentence(object):
 		if IsSentenceValid(sentence):
 			#case it is atomic
 			if len(sentence) == 1:
-				#print('Instantiate Atom :', sentence)
 				self.connector = None
 				self.args = sentence[:]
 			#all other (including not)
 			else:
-				#print('Instantiate :', sentence)
 				self.connector = sentence[0]
 				self.args = sentence[1:]
-			##print( 'a' , self.connector, self.args )
 		else:
-			print(sentence)
 			sys.exit('invalide sentence')
 
 	# check if sentence is atomic
@@ -109,11 +105,9 @@ class Sentence(object):
 
 	# parse sentence
 	def Parse(self):
-		#print( 'Parse : ' , self.connector , self.args )
 
 		# if it is negation only returns one argument
 		if self.IsNegation():
-			#print('IsN :', self.args )
 			return Sentence(self.args[0])
 
 		# else return two sentences, one for each arg
@@ -127,7 +121,6 @@ class Sentence(object):
 	# auxiliary for sentence representation for printing
 	def __repr__(self):
 		if self.IsAtom():
-			#return self.args[0]
 			return str('\'') + str(self.args[0]) + str('\'')
 		elif self.IsNegation():
 			return str((self.connector, self.args[0]))
@@ -138,21 +131,18 @@ def Conjunction(sentence1,sentence2):
 	""" Returns Conjunction of two sentences """
 	arg1 = sentence1.GetSentence()
 	arg2 = sentence2.GetSentence()
-	#print('Conjunction: ', arg1, arg2)
 	return Sentence(('and', arg1, arg2))
 
 def Disjunction(sentence1,sentence2):
 	""" Returns Disjunction of two sentences """
 	arg1 = sentence1.GetSentence()
 	arg2 = sentence2.GetSentence()
-	#print('Disjunction: ', arg1, arg2)
 	return Sentence(('or', arg1, arg2))
 
 def Implication(sentence1,sentence2):
 	""" Returns Implication of two sentences """
 	arg1 = sentence1.GetSentence()
 	arg2 = sentence2.GetSentence()
-	#print('Implication: ', arg1, arg2)
 	return Sentence(('=>', arg1, arg2))
 
 # ------------------------------------------------------------
@@ -192,21 +182,17 @@ class Clause(object):
 			   is set to True"""
 
 	def __init__(self, list_literals):
-		#print('Initialize Clause')
-		#print(list_literals)
 		self.literals = []
 		self.size = 0
-		#print(list_literals)
+
 		# create clause using simplification rules
 		for literal in list_literals:
-			#print(literal)
 			# will not add repeated literals to clause
 			# and verifies if complementary already exists
 			# in clause, if this happens clause is set to True
 			# otherwise add literal to clause
 			repeated_flag = False
 			if IsNegation(literal):
-				#print('N')
 				for literal2 in self.literals:
 					if IsNegation(literal2) and literal2[1] == literal[1]:
 						repeated_flag = True
@@ -216,12 +202,10 @@ class Clause(object):
 						break
 			else:
 				for literal2 in self.literals:
-					#print('P')
 					if IsNegation(literal2) and literal2[1] == literal:
 						self.literals = True
 						break
 					elif literal == literal2:
-						#print('Rep')
 						repeated_flag = True
 						break
 
@@ -233,8 +217,6 @@ class Clause(object):
 			
 		if self.literals != True:
 			self.size = len(self.literals)
-
-		#print(self.literals)
 
 		
 	def IsTautology(self):
@@ -321,6 +303,7 @@ def ParseDisjunction(sentence):
 
 def RemoveRepeatedClauses(KB):
 	""" removes repeated clauses from set of clauses"""
+
 	KB_len = len(KB)
 	implied_clauses = [False for i in range(KB_len)]
 	checked_clauses = [False for i in range(KB_len)]
